@@ -1,0 +1,157 @@
+# -------------------------------------------------------------------------------------
+#
+# Copyright (c) 2025, WSO2 LLC. (http://www.wso2.com).
+#
+# This software is the property of WSO2 LLC. and its suppliers, if any.
+# Dissemination of any information or reproduction of any material contained
+# herein in any form is strictly forbidden, unless permitted by WSO2 expressly.
+# You may not alter or remove any copyright or other notice from copies of this content.
+#
+# --------------------------------------------------------------------------------------
+
+trigger: none
+
+pr: none
+
+pool:
+  vmImage: 'ubuntu-latest'
+
+parameters:
+- name: DESTROY_AZURE_RESOURCES
+  displayName: 'Destroy remaining Azure resources'
+  type: boolean
+  default: false
+- name: PERFORMANCE_IS_THUNDER_BRANCH
+  displayName: Performance IS repo branch name
+  type: string
+  default: thunder-new
+- name: CONCURRENCY
+  displayName: Concurrency
+  type: string
+  default: 50-50
+  values:
+    - 50-50
+    - 50-500
+    - 50-1000
+    - 50-3000
+    - 500-3000
+    - 1000-3000
+- name: BUILD_PURPOSE
+  displayName: Perf-Test purpose
+  type: string
+  default: Regular Thunder performance test
+- name: RUN_MODE
+  displayName: Run Mode
+  type: string
+  default: QUICK
+  values:
+  - QUICK
+  - FULL
+- name: POPULATE_TEST_DATA
+  displayName: Populate test data
+  type: string
+  default: false
+- name: BASTION_NODE_IP
+  displayName: Bastion Node IP
+  type: string
+  default: "20.110.160.128"
+- name: python_version
+  displayName: Python Version
+  default: 3.9
+  values:
+  - 3.9
+
+resources:
+  repositories:
+    - repository: performance-is
+      type: github
+      endpoint: thunder-performance
+      name: Lakshan-Banneheke/performance-is
+      ref:  ${{parameters.PERFORMANCE_IS_THUNDER_BRANCH}}
+
+jobs:
+  - job: thunder_performance_test
+    displayName: Asgardeo performance test
+    condition: eq(${{ parameters.DESTROY_AZURE_RESOURCES }}, False)
+    # Change the timeout as required when running tests with data population
+    timeoutInMinutes: 1200
+    cancelTimeoutInMinutes: 1
+    workspace:
+      clean: all
+    steps:
+      - checkout: self
+
+      - checkout: performance-is
+        persistCredentials: true
+
+      - task: UsePythonVersion@0
+        inputs:
+          versionSpec:  '${{ parameters.python_version }}'
+        displayName: 'Use Python ${{ parameters.python_version }}'
+
+      - task: AzureCLI@2
+        displayName: Initiate performance test run
+        inputs:
+          azureSubscription: thunder-perf-ad-app-secret-cred
+          scriptType: bash
+          useGlobalConfig: true
+          scriptLocation: scriptPath
+          scriptPath: '$(Agent.BuildDirectory)/s/performance-is/azure-pipeline/init_perf_run.sh'
+          addSpnToEnvironment: true
+        env: 
+          BUILD_NUM: $(Build.BuildNumber)
+          BUILD_PURPOSE: ${{parameters.BUILD_PURPOSE}}
+          BRANCH: ${{parameters.PERFORMANCE_IS_THUNDER_BRANCH}}
+          GITHUB_USER_EMAIL: $(gitEmail)
+          GITHUB_USERNAME: $(gitUsername)
+          BUILD_TYPE: $(Build.Reason)
+          BUILD_PATH: $(Build.ArtifactStagingDirectory)
+          DATABASE_HOST_NAME: 'wso2-thunder.postgres.database.azure.com' # TODO check if we can remove this
+          THUNDER_HOST_NAME: 'thunder.local'
+          POPULATE_TEST_DATA: ${{parameters.POPULATE_TEST_DATA}}
+          RUN_MODE: ${{parameters.RUN_MODE}}
+          CONCURRENCY: ${{parameters.CONCURRENCY}}
+          BASTION_NODE_IP: ${{parameters.BASTION_NODE_IP}}
+
+      - task: PublishPipelineArtifact@1
+        displayName: Publish pipeline artifacts
+        condition: always()
+        inputs:
+          targetPath: $(Build.ArtifactStagingDirectory)
+          artifactType: 'pipeline'
+          artifactName: 'PerformanceTestResults'
+
+      - task: DownloadPipelineArtifact@2
+        displayName: Download pipeline artifacts
+        condition: succeeded()
+        inputs:
+          source: 'current'
+          artifact: PerformanceTestResults
+          path: '$(Pipeline.Workspace)/PerformanceTestResults' 
+
+#      - template: ../../pipelines-templates/alerts/send-alert-aqg-perf-test.yaml # TODO ?
+#        parameters:
+#          WEBHOOK_URL: $(RESULTS_G_CHAT_URL)
+#          TITLE: "Thunder Kubernetes Performance - Test Summary"
+#          IS_SUMMARY_ALERT: true
+#          BRANCH: ${{parameters.PERFORMANCE_IS_THUNDER_BRANCH}}
+#          PERF_TEST_PURPOSE: ${{parameters.BUILD_PURPOSE}}
+
+#  - job: force_destroy_az_resources
+#    displayName: Delete Azure Resources
+#    condition: eq(${{ parameters.DESTROY_AZURE_RESOURCES }}, True)
+#    steps:
+#      - checkout: self
+#      - checkout: performance-is
+#      - task: AzureCLI@2
+#        displayName: Force-Destroy Azure Resources
+#        inputs:
+#          azureSubscription: thunder-perf-ad-app-secret-cred
+#          scriptType: bash
+#          useGlobalConfig: true
+#          scriptLocation: scriptPath
+#          scriptPath: '$(Agent.BuildDirectory)/s/performance-is/azure-pipeline/delete_az_resources.sh'
+#          addSpnToEnvironment: true
+#        env:
+#          TAG: "usecase=performance-testing-vm"
+#          RESOURCE_GROUP: "thunder" # TODO: Create better naming convention
