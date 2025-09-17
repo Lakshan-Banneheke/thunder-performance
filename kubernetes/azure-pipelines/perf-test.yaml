@@ -148,30 +148,3 @@ jobs:
           source: 'current'
           artifact: PerformanceTestResults
           path: '$(Pipeline.Workspace)/PerformanceTestResults' 
-
-#      - template: ../../pipelines-templates/alerts/send-alert-aqg-perf-test.yaml # TODO ?
-#        parameters:
-#          WEBHOOK_URL: $(RESULTS_G_CHAT_URL)
-#          TITLE: "Thunder Kubernetes Performance - Test Summary"
-#          IS_SUMMARY_ALERT: true
-#          BRANCH: ${{parameters.PERFORMANCE_IS_THUNDER_BRANCH}}
-#          PERF_TEST_PURPOSE: ${{parameters.BUILD_PURPOSE}}
-
-#  - job: force_destroy_az_resources
-#    displayName: Delete Azure Resources
-#    condition: eq(${{ parameters.DESTROY_AZURE_RESOURCES }}, True)
-#    steps:
-#      - checkout: self
-#      - checkout: performance-is
-#      - task: AzureCLI@2
-#        displayName: Force-Destroy Azure Resources
-#        inputs:
-#          azureSubscription: thunder-perf-ad-app-secret-cred
-#          scriptType: bash
-#          useGlobalConfig: true
-#          scriptLocation: scriptPath
-#          scriptPath: '$(Agent.BuildDirectory)/s/performance-is/azure-pipeline/delete_az_resources.sh'
-#          addSpnToEnvironment: true
-#        env:
-#          TAG: "usecase=performance-testing-vm"
-#          RESOURCE_GROUP: "thunder" # TODO: Create better naming convention
