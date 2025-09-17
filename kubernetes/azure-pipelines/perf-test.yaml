@@ -22,52 +22,59 @@ pool:
   vmImage: 'ubuntu-latest'
 
 parameters:
-- name: PERFORMANCE_IS_THUNDER_BRANCH
-  displayName: Performance IS repo branch name
-  type: string
-  default: thunder-new
-- name: CONCURRENCY
-  displayName: Concurrency
-  type: string
-  default: 50-50
-  values:
-    - 50-50
-    - 50-500
-    - 50-1000
-    - 50-3000
-    - 500-3000
-    - 1000-3000
-- name: BUILD_PURPOSE
-  displayName: Perf-Test purpose
-  type: string
-  default: Regular Thunder performance test
-- name: RUN_MODE
-  displayName: Run Mode
-  type: string
-  default: QUICK
-  values:
-  - QUICK
-  - FULL
-- name: POPULATE_TEST_DATA
-  displayName: Populate test data
-  type: string
-  default: false
-- name: BASTION_NODE_IP
-  displayName: Bastion Node IP
-  type: string
-  default: "20.110.160.128"
-- name: python_version
-  displayName: Python Version
-  default: 3.9
-  values:
-  - 3.9
+  - name: PERFORMANCE_IS_REPO
+    displayName: Performance IS repo name
+    type: string
+    default: Lakshan-Banneheke/performance-is
+  - name: PERFORMANCE_IS_THUNDER_BRANCH
+    displayName: Performance IS repo branch name
+    type: string
+    default: thunder-new
+  - name: CONCURRENCY
+    displayName: Concurrency
+    type: string
+    default: 50-50
+    values:
+      - 50-50
+      - 50-500
+      - 50-1000
+      - 50-3000
+      - 500-3000
+      - 1000-3000
+  - name: BUILD_PURPOSE
+    displayName: Perf-Test purpose
+    type: string
+    default: Regular Thunder performance test
+  - name: RUN_MODE
+    displayName: Run Mode
+    type: string
+    default: QUICK
+    values:
+    - QUICK
+    - FULL
+  - name: POPULATE_TEST_DATA
+    displayName: Populate test data
+    type: string
+    default: false
+  - name: BASTION_NODE_IP
+    displayName: Bastion Node IP
+    type: string
+    default: "20.110.160.128"
+  - name: python_version
+    displayName: Python Version
+    default: 3.9
+    values:
+    - 3.9
+
+variables:
+  - group: vg-thunder-perf
 
 resources:
   repositories:
     - repository: performance-is
       type: github
       endpoint: thunder-performance
-      name: Lakshan-Banneheke/performance-is
+      name:  ${{parameters.PERFORMANCE_IS_REPO}}
       ref:  ${{parameters.PERFORMANCE_IS_THUNDER_BRANCH}}
 
 jobs:
@@ -105,7 +112,7 @@ jobs:
       - task: AzureCLI@2
         displayName: Initiate performance test run
         inputs:
-          azureSubscription: thunder-perf-ad-app-secret-cred
+          azureSubscription: $(AZURE_SERVICE_CONNECTION_NAME)
           scriptType: bash
           useGlobalConfig: true
           scriptLocation: scriptPath

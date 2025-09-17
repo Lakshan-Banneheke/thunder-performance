@@ -11,7 +11,9 @@
 #
 # --------------------------------------------------------------------------------------
 
-HOME="/home/azureuser"
+USER="azureuser"
+HOME="/home/$USER"
+
 
 function update_and_install_packages() {
 
@@ -46,7 +48,7 @@ function install_kubectl() {
 
   echo "[INFO]: Installing kubectl"
   curl -LO "https://dl.k8s.io/release/$(curl -L -s https://dl.k8s.io/release/stable.txt)/bin/linux/amd64/kubectl"
-  sudo install -o root -g root -m 0755 kubectl /usr/local/bin/kubectl
+  install -o root -g root -m 0755 kubectl /usr/local/bin/kubectl
   echo "[INFO]: kubectl installation completed."
 }
 
@@ -62,7 +64,8 @@ function install_helm() {
 function install_az_cli() {
 
   echo "[INFO]: Installing Azure CLI"
-  curl -sL https://aka.ms/InstallAzureCLIDeb | sudo bash
+  curl -sL https://aka.ms/InstallAzureCLIDeb | bash
+  az aks install-cli
   echo "[INFO]: Azure CLI installation completed."
 }
 
