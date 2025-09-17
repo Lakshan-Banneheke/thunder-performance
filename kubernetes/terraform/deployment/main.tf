@@ -36,6 +36,7 @@ module "virtual-network" {
   tags                          = local.default_tags
 }
 
+# Log Analytics Workspace
 module "log-analytics-workspace" {
   source                         = "git::https://github.com/wso2/azure-terraform-modules.git//modules/azurerm/Log-Analytics-Workspace?ref=v2.18.9"
   log_analytics_workspace_name   = join("-", [var.project, var.environment, var.location, var.padding])
@@ -49,9 +50,9 @@ module "log-analytics-workspace" {
   tags                           = local.default_tags
 }
 
-# Create AKS cluster
+# AKS cluster
 module "aks-cluster" {
-  source                     = "git::https://github.com/wso2/azure-terraform-modules.git//modules/azurerm/AKS-Generic?ref=v2.18.9"
+  source                     = "/Users/lakshanbanneheke/Repos/azure-terraform-modules/modules/azurerm/AKS-Generic"
   aks_cluster_name           = join("-", [var.project, var.environment, var.location, var.padding])
   aks_cluster_dns_prefix     = join("-", [var.project, var.environment, var.location, var.padding])
   location                   = var.location
@@ -63,10 +64,10 @@ module "aks-cluster" {
   # Network configuration
   virtual_network_resource_group_name                  = module.resource-group.resource_group_name
   virtual_network_name                                 = module.virtual-network.virtual_network_name
-  aks_node_pool_resource_group_name                    = module.resource-group.resource_group_name
+  aks_node_pool_resource_group_name                    = join("-", [var.project, local.aks_node_pool_workload, var.environment, var.location, var.padding])
   aks_node_pool_subnet_name                            = join("-", [local.aks_node_pool_workload, var.padding])
   aks_node_pool_subnet_address_prefix                  = var.aks_node_pool_subnet_cidr
-  aks_node_pool_subnet_route_table_name                = join("-", [var.project, local.aks_node_pool_workload, var.environment, var.padding])
+  aks_node_pool_subnet_route_table_name                = join("-", [var.project, local.aks_node_pool_workload, var.environment, var.location, var.padding])
   aks_node_pool_subnet_network_security_group_name     = join("-", [var.project, local.aks_node_pool_workload, var.environment, var.location, var.padding])
   aks_nodepool_subnet_allowed_service_endpoints        = var.aks_nodepool_subnet_allowed_service_endpoints
   aks_load_balancer_subnet_name                        = join("-", [local.aks_internal_lb_workload, var.padding])
@@ -82,6 +83,7 @@ module "aks-cluster" {
   private_cluster_enabled         = var.private_cluster_enabled
   outbound_type                   = "loadBalancer"
   api_server_authorized_ip_ranges = var.api_server_authorized_ip_ranges
+  aks_azure_rbac_enabled          = true
 
   # Default node pool configuration
   default_node_pool_name                         = var.default_node_pool_name
@@ -96,18 +98,17 @@ module "aks-cluster" {
   default_node_pool_only_critical_addons_enabled = false
   default_node_pool_os_disk_type                 = "Ephemeral"
 
-  # Azure Policy
   azure_policy_enabled = true
 }
 
 # Database
 module "postgres-vm-subnet" {
   source                      = "git::https://github.com/wso2/azure-terraform-modules.git//modules/azurerm/Subnet?ref=v2.18.9"
-  subnet_name                 = join("-", ["postgre-sql", var.padding])
+  subnet_name                 = join("-", ["postgres", var.padding])
   resource_group_name         = module.resource-group.resource_group_name
   location                    = var.location
   virtual_network_name        = module.virtual-network.virtual_network_name
-  network_security_group_name = join("-", [var.project, var.environment, var.location, var.padding])
+  network_security_group_name = join("-", [var.project, "postgres", var.environment, var.location, var.padding])
   address_prefix              = var.postgres_subnet_address_prefix
   service_endpoints           = var.postgres_vm_subnet_subnet_service_endpoints
   delegation = [
@@ -141,18 +142,18 @@ module "private-dns-zone-vnet-link-postgres" {
 }
 
 module "postgres-server" {
-  source                                      = "git::https://github.com/wso2/azure-terraform-modules.git//modules/azurerm/PostgreSQL-Flexible-Server?ref=v2.18.9"
-  server_name                                 = join("-", [var.project, var.environment, var.location, var.padding])
-  resource_group_name                         = module.resource-group.resource_group_name
-  subnet_id                                   = module.postgres-vm-subnet.subnet_id
-  private_dns_zone_id                         = module.private-dns-postgres.private_dns_zone_id
-  location                                    = var.location
-  postgresql_server_version                   = var.postgres_server_version
-  postgresql_server_admin_username            = var.postgres_server_admin_username
-  postgresql_server_admin_password            = var.postgres_server_admin_password
-  storage_size                                = var.postgres_server_storage_size
-  sku_name                                    = var.postgres_server_sku_name
-  tags                                        = local.default_tags
+  source                           = "git::https://github.com/wso2/azure-terraform-modules.git//modules/azurerm/PostgreSQL-Flexible-Server?ref=v2.18.9"
+  server_name                      = join("-", [var.project, var.environment, var.location, var.padding])
+  resource_group_name              = module.resource-group.resource_group_name
+  subnet_id                        = module.postgres-vm-subnet.subnet_id
+  private_dns_zone_id              = module.private-dns-postgres.private_dns_zone_id
+  location                         = var.location
+  postgresql_server_version        = var.postgres_server_version
+  postgresql_server_admin_username = var.postgres_server_admin_username
+  postgresql_server_admin_password = var.postgres_server_admin_password
+  storage_size                     = var.postgres_server_storage_size
+  sku_name                         = var.postgres_server_sku_name
+  tags                             = local.default_tags
   depends_on = [
     module.private-dns-zone-vnet-link-postgres
   ]
@@ -168,4 +169,60 @@ module "postgres-runtime-db" {
   source             = "git::https://github.com/wso2/azure-terraform-modules.git//modules/azurerm/PostgreSQL-Flexible-Server-Database?ref=v2.18.9"
   database_full_name = "runtimedb"
   server_id          = module.postgres-server.postgresql_server_id
+}
+
+# VM
+module "vm-subnet" {
+  source                      = "git::https://github.com/wso2/azure-terraform-modules.git//modules/azurerm/Subnet?ref=v2.18.9"
+  subnet_name                 = join("-", ["vm", var.padding])
+  resource_group_name         = module.resource-group.resource_group_name
+  location                    = var.location
+  virtual_network_name        = module.virtual-network.virtual_network_name
+  network_security_group_name = join("-", [var.project, "vm", var.environment, var.location, var.padding])
+  address_prefix              = var.vm_subnet_address_prefix
+  tags                        = local.default_tags
+}
+
+module "public-ip-vm-perf-runner" {
+  source              = "git::https://github.com/wso2/azure-terraform-modules.git//modules/azurerm/Public-IP?ref=v2.18.9"
+  public_ip_name      = join("-", [var.project, var.vm_perf_runner_name, var.location, var.padding])
+  resource_group_name = module.resource-group.resource_group_name
+  location            = var.location
+  tags                = local.default_tags
+}
+
+module "allow-ssh-vm-subnet-rule" {
+  source                     = "git::https://github.com/wso2/azure-terraform-modules.git//modules/azurerm/Network-Security-Rule?ref=v2.18.9"
+  network_security_rule_name = join("", ["Allow", "SSH"])
+  resource_group_name        = module.resource-group.resource_group_name
+  nsg_name                   = module.vm-subnet.subnet_nsg_name
+  priority                   = 1000
+  direction                  = "Inbound"
+  access                     = "Allow"
+  protocol                   = "Tcp"
+  source_port_range          = "*"
+  destination_port_range     = 22
+  source_address_prefix      = "*"
+  destination_address_prefix = "*"
+}
+
+module "vm-perf-runner" {
+  source                    = "../modules/Static-IP-Custom-Virtual-Machine"
+  vm_name                   = join("-", [var.project, var.vm_perf_runner_name, var.location, var.padding])
+  computer_name             = join("-", [var.project, var.vm_perf_runner_name, var.location, var.padding])
+  os_disk_name              = join("-", [var.project, var.vm_perf_runner_name, var.location, var.padding])
+  nic_name                  = join("-", [var.project, var.vm_perf_runner_name, var.location, var.padding])
+  nic_ip_configuration_name = join("-", [var.project, var.vm_perf_runner_name, var.location, var.padding])
+  resource_group_name       = module.resource-group.resource_group_name
+  location                  = var.location
+  admin_username            = "azureuser" #Do not change the admin username as it is used in the perf scripts.
+  size                      = var.vm_size
+  os_disk_size_gb           = var.vm_os_disk_size_gb
+  public_key_path           = local.vm_public_ssh_key_path
+  subnet_id                 = module.vm-subnet.subnet_id
+  private_ip_address        = var.vm_private_ip_address
+  public_ip_address_id      = module.public-ip-vm-perf-runner.public_ip_id
+  source_image_id           = var.vm_image_id
+  tags                      = local.default_tags
+  depends_on                = [module.vm-subnet]
 }

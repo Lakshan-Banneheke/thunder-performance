@@ -212,3 +212,34 @@ variable "postgres_server_sku_name" {
   description = "The SKU name for the Postgres server"
   type        = string
 }
+
+# VM variables
+variable "vm_subnet_address_prefix" {
+  description = "The address prefix for the VM subnet"
+  type        = list(string)
+}
+
+variable "vm_perf_runner_name" {
+  description = "The name of the performance runner VM"
+  type        = string
+}
+
+variable "vm_size" {
+  description = "The size of the VM"
+  type        = string
+}
+
+variable "vm_os_disk_size_gb" {
+  description = "The size of the OS disk in GB"
+  type        = string
+}
+
+variable "vm_private_ip_address" {
+  description = "The static private IP address for the VM"
+  type        = string
+}
+
+variable "vm_image_id" {
+  description = "The ID of the VM image to use"
+  type        = string
+}
