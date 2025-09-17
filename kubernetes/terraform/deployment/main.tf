@@ -21,14 +21,14 @@ provider "azurerm" {
 }
 
 module "resource-group" {
-  source              = "git::https://github.com/wso2/azure-terraform-modules.git//modules/azurerm/Resource-Group?ref=v2.18.9"
+  source              = "git::https://github.com/wso2/azure-terraform-modules.git//modules/azurerm/Resource-Group?ref=v2.18.10"
   resource_group_name = join("-", [var.project, var.environment, var.location, var.padding])
   location            = var.location
   tags                = merge(local.default_tags)
 }
 
 module "virtual-network" {
-  source                        = "git::https://github.com/wso2/azure-terraform-modules.git//modules/azurerm/Virtual-Network?ref=v2.18.9"
+  source                        = "git::https://github.com/wso2/azure-terraform-modules.git//modules/azurerm/Virtual-Network?ref=v2.18.10"
   virtual_network_name          = join("-", [var.project, var.environment, var.location, var.padding])
   resource_group_name           = module.resource-group.resource_group_name
   location                      = var.location
@@ -38,7 +38,7 @@ module "virtual-network" {
 
 # Log Analytics Workspace
 module "log-analytics-workspace" {
-  source                         = "git::https://github.com/wso2/azure-terraform-modules.git//modules/azurerm/Log-Analytics-Workspace?ref=v2.18.9"
+  source                         = "git::https://github.com/wso2/azure-terraform-modules.git//modules/azurerm/Log-Analytics-Workspace?ref=v2.18.10"
   log_analytics_workspace_name   = join("-", [var.project, var.environment, var.location, var.padding])
   resource_group_name            = module.resource-group.resource_group_name
   location                       = var.location
@@ -52,7 +52,7 @@ module "log-analytics-workspace" {
 
 # AKS cluster
 module "aks-cluster" {
-  source                     = "/Users/lakshanbanneheke/Repos/azure-terraform-modules/modules/azurerm/AKS-Generic"
+  source                     = "git::https://github.com/wso2/azure-terraform-modules.git//modules/azurerm/AKS-Generic?ref=v2.18.10"
   aks_cluster_name           = join("-", [var.project, var.environment, var.location, var.padding])
   aks_cluster_dns_prefix     = join("-", [var.project, var.environment, var.location, var.padding])
   location                   = var.location
@@ -103,7 +103,7 @@ module "aks-cluster" {
 
 # Database
 module "postgres-vm-subnet" {
-  source                      = "git::https://github.com/wso2/azure-terraform-modules.git//modules/azurerm/Subnet?ref=v2.18.9"
+  source                      = "git::https://github.com/wso2/azure-terraform-modules.git//modules/azurerm/Subnet?ref=v2.18.10"
   subnet_name                 = join("-", ["postgres", var.padding])
   resource_group_name         = module.resource-group.resource_group_name
   location                    = var.location
@@ -124,14 +124,14 @@ module "postgres-vm-subnet" {
 }
 
 module "private-dns-postgres" {
-  source                = "git::https://github.com/wso2/azure-terraform-modules.git//modules/azurerm/Private-DNS-Zone?ref=v2.18.9"
+  source                = "git::https://github.com/wso2/azure-terraform-modules.git//modules/azurerm/Private-DNS-Zone?ref=v2.18.10"
   private_dns_zone_name = local.private_dns_zone_name_postgres
   resource_group_name   = module.resource-group.resource_group_name
   tags                  = local.default_tags
 }
 
 module "private-dns-zone-vnet-link-postgres" {
-  source                          = "git::https://github.com/wso2/azure-terraform-modules.git//modules/azurerm/Private-DNS-Zone-Vnet-Link?ref=v2.18.9"
+  source                          = "git::https://github.com/wso2/azure-terraform-modules.git//modules/azurerm/Private-DNS-Zone-Vnet-Link?ref=v2.18.10"
   private_dns_zone_vnet_link_name = join("-", [var.project, "postgres", var.environment, var.padding])
   resource_group_name             = module.resource-group.resource_group_name
   private_dns_zone_name           = local.private_dns_zone_name_postgres
@@ -142,7 +142,7 @@ module "private-dns-zone-vnet-link-postgres" {
 }
 
 module "postgres-server" {
-  source                           = "git::https://github.com/wso2/azure-terraform-modules.git//modules/azurerm/PostgreSQL-Flexible-Server?ref=v2.18.9"
+  source                           = "git::https://github.com/wso2/azure-terraform-modules.git//modules/azurerm/PostgreSQL-Flexible-Server?ref=v2.18.10"
   server_name                      = join("-", [var.project, var.environment, var.location, var.padding])
   resource_group_name              = module.resource-group.resource_group_name
   subnet_id                        = module.postgres-vm-subnet.subnet_id
@@ -160,20 +160,20 @@ module "postgres-server" {
 }
 
 module "postgres-thunder-db" {
-  source             = "git::https://github.com/wso2/azure-terraform-modules.git//modules/azurerm/PostgreSQL-Flexible-Server-Database?ref=v2.18.9"
+  source             = "git::https://github.com/wso2/azure-terraform-modules.git//modules/azurerm/PostgreSQL-Flexible-Server-Database?ref=v2.18.10"
   database_full_name = "thunderdb"
   server_id          = module.postgres-server.postgresql_server_id
 }
 
 module "postgres-runtime-db" {
-  source             = "git::https://github.com/wso2/azure-terraform-modules.git//modules/azurerm/PostgreSQL-Flexible-Server-Database?ref=v2.18.9"
+  source             = "git::https://github.com/wso2/azure-terraform-modules.git//modules/azurerm/PostgreSQL-Flexible-Server-Database?ref=v2.18.10"
   database_full_name = "runtimedb"
   server_id          = module.postgres-server.postgresql_server_id
 }
 
 # VM
 module "vm-subnet" {
-  source                      = "git::https://github.com/wso2/azure-terraform-modules.git//modules/azurerm/Subnet?ref=v2.18.9"
+  source                      = "git::https://github.com/wso2/azure-terraform-modules.git//modules/azurerm/Subnet?ref=v2.18.10"
   subnet_name                 = join("-", ["vm", var.padding])
   resource_group_name         = module.resource-group.resource_group_name
   location                    = var.location
@@ -184,7 +184,7 @@ module "vm-subnet" {
 }
 
 module "public-ip-vm-perf-runner" {
-  source              = "git::https://github.com/wso2/azure-terraform-modules.git//modules/azurerm/Public-IP?ref=v2.18.9"
+  source              = "git::https://github.com/wso2/azure-terraform-modules.git//modules/azurerm/Public-IP?ref=v2.18.10"
   public_ip_name      = join("-", [var.project, var.vm_perf_runner_name, var.location, var.padding])
   resource_group_name = module.resource-group.resource_group_name
   location            = var.location
@@ -192,7 +192,7 @@ module "public-ip-vm-perf-runner" {
 }
 
 module "allow-ssh-vm-subnet-rule" {
-  source                     = "git::https://github.com/wso2/azure-terraform-modules.git//modules/azurerm/Network-Security-Rule?ref=v2.18.9"
+  source                     = "git::https://github.com/wso2/azure-terraform-modules.git//modules/azurerm/Network-Security-Rule?ref=v2.18.10"
   network_security_rule_name = join("", ["Allow", "SSH"])
   resource_group_name        = module.resource-group.resource_group_name
   nsg_name                   = module.vm-subnet.subnet_nsg_name
@@ -207,7 +207,7 @@ module "allow-ssh-vm-subnet-rule" {
 }
 
 module "vm-perf-runner" {
-  source                    = "../modules/Static-IP-Custom-Virtual-Machine"
+  source                    = "git::https://github.com/wso2/azure-terraform-modules.git//modules/azurerm/Static-IP-Custom-Virtual-Machine?ref=v2.18.10"
   vm_name                   = join("-", [var.project, var.vm_perf_runner_name, var.location, var.padding])
   computer_name             = join("-", [var.project, var.vm_perf_runner_name, var.location, var.padding])
   os_disk_name              = join("-", [var.project, var.vm_perf_runner_name, var.location, var.padding])
