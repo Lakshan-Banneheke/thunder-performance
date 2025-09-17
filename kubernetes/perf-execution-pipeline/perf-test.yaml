@@ -100,7 +100,7 @@ jobs:
           mkdir ~/.ssh
           sudo mv $(vmKey.secureFilePath) ~/.ssh/id_rsa
           sudo chmod 400 ~/.ssh/id_rsa
-        displayName: 'Setup SSH Key'
+        displayName: 'Setup VM SSH Key'
 
       - task: AzureCLI@2
         displayName: Initiate performance test run
