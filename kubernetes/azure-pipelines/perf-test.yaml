@@ -74,8 +74,8 @@ resources:
     - repository: performance-is
       type: github
       endpoint: thunder-performance
-      name:  ${{parameters.PERFORMANCE_IS_REPO}}
-      ref:  ${{parameters.PERFORMANCE_IS_THUNDER_BRANCH}}
+      name: ${{parameters.PERFORMANCE_IS_REPO}}
+      ref: ${{parameters.PERFORMANCE_IS_THUNDER_BRANCH}}
 
 jobs:
   - job: thunder_performance_test
