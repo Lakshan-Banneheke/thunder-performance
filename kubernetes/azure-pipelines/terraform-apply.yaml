@@ -96,7 +96,7 @@ stages:
         condition: eq(dependencies.TerraformPrePlanJob.outputs['CheckLease.LeaseStatus'], 'locked')
         timeoutInMinutes: 30
         steps:
-          - task: ManualValidation@0
+          - task: ManualValidation@1
             inputs:
               notifyUsers: ''
               instructions: |
