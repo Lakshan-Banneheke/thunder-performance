@@ -1,0 +1,95 @@
+trigger: none
+
+# Pipeline for starting and stopping environment resources
+
+parameters:
+  - name: action
+    displayName: 'Action to perform'
+    type: string
+    default: 'stop'
+    values:
+      - start
+      - stop
+
+variables:
+  RESOURCE_GROUP_NAME: 'rg-thunder-perf-eastus2-001'
+  AKS_CLUSTER_NAME: 'aks-thunder-perf-eastus2-001'
+  VM_NAME: 'vmthunder-perf-runner-eastus2-001'
+  POSTGRES_SERVER_NAME: 'postgresql-thunder-perf-eastus2-001'
+
+pool:
+  vmImage: 'ubuntu-latest'
+
+stages:
+  - stage: ManageEnvironment
+    displayName: 'Manage Environment'
+    jobs:
+      - job: StartResources
+        displayName: 'Start Resources'
+        condition: eq('${{ parameters.action }}', 'start')
+        steps:
+          - task: AzureCLI@2
+            displayName: 'Start AKS Cluster'
+            inputs:
+              azureSubscription: 'ThunderPerformanceServiceConnection'
+              scriptType: 'bash'
+              scriptLocation: 'inlineScript'
+              inlineScript: |
+                echo "Starting AKS Cluster..."
+                az aks start --name $(AKS_CLUSTER_NAME) --resource-group $(RESOURCE_GROUP_NAME)
+                echo "AKS Cluster started successfully"
+          - task: AzureCLI@2
+            displayName: 'Start Virtual Machine'
+            inputs:
+              azureSubscription: 'ThunderPerformanceServiceConnection'
+              scriptType: 'bash'
+              scriptLocation: 'inlineScript'
+              inlineScript: |
+                echo "Starting Virtual Machine..."
+                az vm start --name $(VM_NAME) --resource-group $(RESOURCE_GROUP_NAME)
+                echo "Virtual Machine started successfully"
+          - task: AzureCLI@2
+            displayName: 'Start Postgres Server'
+            inputs:
+              azureSubscription: 'ThunderPerformanceServiceConnection'
+              scriptType: 'bash'
+              scriptLocation: 'inlineScript'
+              inlineScript: |
+                echo "Starting Postgres Server..."
+                az postgres flexible-server start --name $(POSTGRES_SERVER_NAME) --resource-group $(RESOURCE_GROUP_NAME)
+                echo "Postgres Server started successfully"
+
+      - job: StopResources
+        displayName: 'Stop Resources'
+        condition: eq('${{ parameters.action }}', 'stop')
+        steps:
+          - task: AzureCLI@2
+            displayName: 'Stop AKS Cluster'
+            inputs:
+              azureSubscription: 'ThunderPerformanceServiceConnection'
+              scriptType: 'bash'
+              scriptLocation: 'inlineScript'
+              inlineScript: |
+                echo "Stopping AKS Cluster..."
+                az aks stop --name $(AKS_CLUSTER_NAME) --resource-group $(RESOURCE_GROUP_NAME)
+                echo "AKS Cluster stopped successfully"
+          - task: AzureCLI@2
+            displayName: 'Stop Virtual Machine'
+            inputs:
+              azureSubscription: 'ThunderPerformanceServiceConnection'
+              scriptType: 'bash'
+              scriptLocation: 'inlineScript'
+              inlineScript: |
+                echo "Stopping Virtual Machine..."
+                az vm deallocate --name $(VM_NAME) --resource-group $(RESOURCE_GROUP_NAME)
+                echo "Virtual Machine stopped successfully"
+          - task: AzureCLI@2
+            displayName: 'Stop Postgres Server'
+            inputs:
+              azureSubscription: 'ThunderPerformanceServiceConnection'
+              scriptType: 'bash'
+              scriptLocation: 'inlineScript'
+              inlineScript: |
+                echo "Stopping Postgres Server..."
+                az postgres flexible-server stop --name $(POSTGRES_SERVER_NAME) --resource-group $(RESOURCE_GROUP_NAME)
+                echo "Postgres Server stopped successfully"
