@@ -31,7 +31,7 @@ stages:
           - task: AzureCLI@2
             displayName: 'Start AKS Cluster'
             inputs:
-              azureSubscription: 'ThunderPerformanceServiceConnection'
+              azureSubscription: 'thunder-perf-workload-identity'
               scriptType: 'bash'
               scriptLocation: 'inlineScript'
               inlineScript: |
@@ -41,7 +41,7 @@ stages:
           - task: AzureCLI@2
             displayName: 'Start Virtual Machine'
             inputs:
-              azureSubscription: 'ThunderPerformanceServiceConnection'
+              azureSubscription: 'thunder-perf-workload-identity'
               scriptType: 'bash'
               scriptLocation: 'inlineScript'
               inlineScript: |
@@ -51,7 +51,7 @@ stages:
           - task: AzureCLI@2
             displayName: 'Start Postgres Server'
             inputs:
-              azureSubscription: 'ThunderPerformanceServiceConnection'
+              azureSubscription: 'thunder-perf-workload-identity'
               scriptType: 'bash'
               scriptLocation: 'inlineScript'
               inlineScript: |
@@ -66,7 +66,7 @@ stages:
           - task: AzureCLI@2
             displayName: 'Stop AKS Cluster'
             inputs:
-              azureSubscription: 'ThunderPerformanceServiceConnection'
+              azureSubscription: 'thunder-perf-workload-identity'
               scriptType: 'bash'
               scriptLocation: 'inlineScript'
               inlineScript: |
@@ -76,7 +76,7 @@ stages:
           - task: AzureCLI@2
             displayName: 'Stop Virtual Machine'
             inputs:
-              azureSubscription: 'ThunderPerformanceServiceConnection'
+              azureSubscription: 'thunder-perf-workload-identity'
               scriptType: 'bash'
               scriptLocation: 'inlineScript'
               inlineScript: |
@@ -86,7 +86,7 @@ stages:
           - task: AzureCLI@2
             displayName: 'Stop Postgres Server'
             inputs:
-              azureSubscription: 'ThunderPerformanceServiceConnection'
+              azureSubscription: 'thunder-perf-workload-identity'
               scriptType: 'bash'
               scriptLocation: 'inlineScript'
               inlineScript: |
