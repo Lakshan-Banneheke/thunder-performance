@@ -39,7 +39,7 @@ module "virtual-network" {
       name      = join("-", [var.project, "postgres", var.environment, var.padding])
       zone_name = local.private_dns_zone_name_postgres
     }
-  ],
+  ]
   depends_on = [
     module.private-dns-postgres
   ]
