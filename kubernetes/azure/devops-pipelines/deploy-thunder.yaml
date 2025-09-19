@@ -43,6 +43,7 @@ pool:
 
 variables:
   - group: vg-thunder-perf
+  - group: vg-thunder-perf-secrets
   - template: ./variables.yaml
   - name: THUNDER_REPO
     value: ${{parameters.THUNDER_REPO}}

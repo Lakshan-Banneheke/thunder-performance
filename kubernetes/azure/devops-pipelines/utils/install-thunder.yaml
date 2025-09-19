@@ -17,12 +17,12 @@
 parameters:
   - name: WORKING_DIRECTORY
     type: string
-  - name: NAMESPACE
-    type: string
-    default: 'default'
   - name: RELEASE_NAME
     type: string
     default: 'thunder-perf'
+  - name: NAMESPACE
+    type: string
+    default: 'default'
 
 steps:
   - task: AzureCLI@2
@@ -34,5 +34,34 @@ steps:
       workingDirectory: ${{ parameters.WORKING_DIRECTORY }}
       inlineScript: |
         echo "Installing Thunder Helm Chart"
-        helm upgrade --install ${{ parameters.RELEASE_NAME}} .
+        
+        helm upgrade --install ${{ parameters.RELEASE_NAME }} . \
+          --namespace ${{ parameters.NAMESPACE }} \
+          --set deployment.replicaCount=$(THUNDER_REPLICAS) \
+          --set deployment.securityContext.readOnlyRootFilesystem=true \
+          --set deployment.image.registry=$(THUNDER_IMAGE_REGISTRY) \
+          --set deployment.image.repository=$(THUNDER_IMAGE_REPOSITORY) \
+          --set deployment.image.tag=$(THUNDER_IMAGE_TAG) \
+          --set deployment.resources.limits.cpu=$(THUNDER_CPU_LIMITS) \
+          --set deployment.resources.requests.cpu=$(THUNDER_CPU_REQUESTS) \
+          --set deployment.resources.limits.memory=$(THUNDER_MEMORY_LIMITS) \
+          --set deployment.resources.requests.memory=$(THUNDER_MEMORY_REQUESTS) \
+          --set hpa.enabled=$(THUNDER_HPA_ENABLED) \
+          --set hpa.maxReplicas=$(THUNDER_HPA_MAX_REPLICAS) \
+          --set hpa.averageUtilizationCPU=$(THUNDER_HPA_CPU_UTILIZATION) \
+          --set hpa.averageUtilizationMemory=$(THUNDER_HPA_MEMORY_UTILIZATION) \
+          --set ingress.tlsSecretsName=$(TLS_SECRET_NAME) \
+          --set configuration.database.identity.type=$(THUNDER_DB_TYPE) \
+          --set configuration.database.identity.name=$(THUNDER_DB_NAME) \
+          --set configuration.database.identity.host=$(THUNDER_DB_HOST) \
+          --set configuration.database.identity.port=$(THUNDER_DB_PORT) \
+          --set configuration.database.identity.username=$(POSTGRES-ADMIN-USERNAME) \
+          --set configuration.database.identity.password=$(POSTGRES-ADMIN-PASSWORD) \
+          --set configuration.database.runtime.type=$(RUNTIME_DB_TYPE) \
+          --set configuration.database.runtime.name=$(RUNTIME_DB_NAME) \
+          --set configuration.database.runtime.host=$(RUNTIME_DB_HOST) \
+          --set configuration.database.runtime.port=$(RUNTIME_DB_PORT) \
+          --set configuration.database.runtime.username=$(POSTGRES-ADMIN-USERNAME) \
+          --set configuration.database.runtime.password=$(POSTGRES-ADMIN-PASSWORD)
+        
         echo "Thunder Helm Chart installed successfully"
