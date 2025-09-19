@@ -38,7 +38,6 @@ steps:
         helm upgrade --install ${{ parameters.RELEASE_NAME }} . \
           --namespace ${{ parameters.NAMESPACE }} \
           --set deployment.replicaCount=$(THUNDER_REPLICAS) \
-          --set deployment.securityContext.readOnlyRootFilesystem=true \
           --set deployment.image.registry=$(THUNDER_IMAGE_REGISTRY) \
           --set deployment.image.repository=$(THUNDER_IMAGE_REPOSITORY) \
           --set deployment.image.tag=$(THUNDER_IMAGE_TAG) \
