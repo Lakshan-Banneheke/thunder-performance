@@ -12,10 +12,14 @@ parameters:
       - stop
 
 variables:
-  RESOURCE_GROUP_NAME: 'rg-thunder-perf-eastus2-001'
-  AKS_CLUSTER_NAME: 'aks-thunder-perf-eastus2-001'
-  VM_NAME: 'vmthunder-perf-runner-eastus2-001'
-  POSTGRES_SERVER_NAME: 'postgresql-thunder-perf-eastus2-001'
+  PROJECT: "thunder"
+  ENVIRONMENT: "perf"
+  LOCATION: "eastus2"
+  PADDING: "001"
+  RESOURCE_GROUP_NAME: 'rg-$(PROJECT)-$(ENVIRONMENT)-$(LOCATION)-$(PADDING)'
+  AKS_CLUSTER_NAME: 'aks-$(PROJECT)-$(ENVIRONMENT)-$(LOCATION)-$(PADDING)'
+  VM_NAME: 'vm$(PROJECT)-$(ENVIRONMENT)-runner-$(LOCATION)-$(PADDING)'
+  POSTGRES_SERVER_NAME: 'postgresql-$(PROJECT)-$(ENVIRONMENT)-$(LOCATION)-$(PADDING)'
 
 pool:
   vmImage: 'ubuntu-latest'
@@ -29,16 +33,6 @@ stages:
         condition: eq('${{ parameters.action }}', 'start')
         steps:
           - task: AzureCLI@2
-            displayName: 'Start AKS Cluster'
-            inputs:
-              azureSubscription: 'thunder-perf-workload-identity'
-              scriptType: 'bash'
-              scriptLocation: 'inlineScript'
-              inlineScript: |
-                echo "Starting AKS Cluster..."
-                az aks start --name $(AKS_CLUSTER_NAME) --resource-group $(RESOURCE_GROUP_NAME)
-                echo "AKS Cluster started successfully"
-          - task: AzureCLI@2
             displayName: 'Start Virtual Machine'
             inputs:
               azureSubscription: 'thunder-perf-workload-identity'
@@ -48,6 +42,16 @@ stages:
                 echo "Starting Virtual Machine..."
                 az vm start --name $(VM_NAME) --resource-group $(RESOURCE_GROUP_NAME)
                 echo "Virtual Machine started successfully"
+          - task: AzureCLI@2
+            displayName: 'Start AKS Cluster'
+            inputs:
+              azureSubscription: 'thunder-perf-workload-identity'
+              scriptType: 'bash'
+              scriptLocation: 'inlineScript'
+              inlineScript: |
+                echo "Starting AKS Cluster..."
+                az aks start --name $(AKS_CLUSTER_NAME) --resource-group $(RESOURCE_GROUP_NAME)
+                echo "AKS Cluster started successfully"
           - task: AzureCLI@2
             displayName: 'Start Postgres Server'
             inputs:
@@ -64,16 +68,6 @@ stages:
         condition: eq('${{ parameters.action }}', 'stop')
         steps:
           - task: AzureCLI@2
-            displayName: 'Stop AKS Cluster'
-            inputs:
-              azureSubscription: 'thunder-perf-workload-identity'
-              scriptType: 'bash'
-              scriptLocation: 'inlineScript'
-              inlineScript: |
-                echo "Stopping AKS Cluster..."
-                az aks stop --name $(AKS_CLUSTER_NAME) --resource-group $(RESOURCE_GROUP_NAME)
-                echo "AKS Cluster stopped successfully"
-          - task: AzureCLI@2
             displayName: 'Stop Virtual Machine'
             inputs:
               azureSubscription: 'thunder-perf-workload-identity'
@@ -83,6 +77,16 @@ stages:
                 echo "Stopping Virtual Machine..."
                 az vm deallocate --name $(VM_NAME) --resource-group $(RESOURCE_GROUP_NAME)
                 echo "Virtual Machine stopped successfully"
+          - task: AzureCLI@2
+            displayName: 'Stop AKS Cluster'
+            inputs:
+              azureSubscription: 'thunder-perf-workload-identity'
+              scriptType: 'bash'
+              scriptLocation: 'inlineScript'
+              inlineScript: |
+                echo "Stopping AKS Cluster..."
+                az aks stop --name $(AKS_CLUSTER_NAME) --resource-group $(RESOURCE_GROUP_NAME)
+                echo "AKS Cluster stopped successfully"
           - task: AzureCLI@2
             displayName: 'Stop Postgres Server'
             inputs:
