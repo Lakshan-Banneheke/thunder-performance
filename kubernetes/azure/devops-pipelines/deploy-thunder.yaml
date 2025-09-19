@@ -26,79 +26,27 @@ pool:
   vmImage: 'ubuntu-latest'
 
 variables:
-  INTERNAL_NGINX_CONTROLLER_LB_INTERNAL_IP: "10.0.2.5"
-  INTERNAL_NGINX_CONTROLLER_LB_INTERNAL_SUBNET: "10.0.2.0/24"
+  - group: vg-thunder-perf
+  - template: ./variables.yaml
 
 jobs:
   - job: install_nginx_and_thunder
     displayName: Install NGINX Ingress and Thunder
-    condition: eq(${{ parameters.INSTALL_INTERNAL_NGINX_INGRESS }}, True)
     steps:
-      - task: DownloadSecureFile@1
-        name: vmKey
-        displayName: 'Download Bastion VM Key'
-        inputs:
-          secureFile: 'azureVMSSHKey'
-
-      - script: |
-          echo "Copying the VM Key to ~/.ssh and setting permissions"
-          mkdir ~/.ssh
-          sudo mv $(vmKey.secureFilePath) ~/.ssh/id_rsa
-          sudo chmod 400 ~/.ssh/id_rsa
-        displayName: 'Setup Bastion VM SSH Key'
-
       - task: AzureCLI@2
-        displayName: 'Get Bastion VM IP'
+        displayName: 'Set AKS Credentials'
         inputs:
         azureSubscription: $(AZURE_SERVICE_CONNECTION_NAME)
         scriptType: 'bash'
         scriptLocation: 'inlineScript'
         inlineScript: |
-            echo "Fetching VM IP..."
-            VM_IP=$(az vm list-ip-addresses --resource-group $(RESOURCE_GROUP_NAME) --name $(VM_NAME) --query "[].virtualMachine.network.publicIpAddresses[0].ipAddress" -o tsv)
-            echo "##vso[task.setvariable variable=VM_IP]$VM_IP"
-            echo "VM IP fetched successfully: $VM_IP"
+          echo "Getting AKS Credentials"
+          az aks get-credentials --resource-group $(RESOURCE_GROUP_NAME) --name $(AKS_CLUSTER_NAME) --overwrite-existing --admin
+          kubelogin convert-kubeconfig -l azurecli
+          echo "AKS Credentials set successfully"
 
-      - script: |
-          echo "Connecting to VM at IP: $(VM_IP)"
-          ssh -o StrictHostKeyChecking=no -i ~/.ssh/id_rsa azureuser@$(VM_IP) << 'EOF'
-            echo "Connected to VM successfully"
-          
-            # Update package list
-            echo "Updating package lists..."
-            sudo apt-get update
-          
-            # Install necessary packages if needed
-            echo "Installing required packages..."
-            sudo apt-get install -y curl jq
-          
-            # Create necessary directories
-            echo "Creating directories..."
-            mkdir -p ~/deployment
-          
-            # Check Kubernetes status
-            echo "Checking Kubernetes status..."
-            kubectl get nodes
-          
-            # Execute additional commands as needed
-            echo "Current directory: $(pwd)"
-            echo "Running additional custom commands..."
-            # Add your additional commands here
-          
-            echo "All commands executed successfully"
-          EOF
-          
-          
-          
-          # Copy the shell script to the VM
-          scp -o StrictHostKeyChecking=no -i ~/.ssh/id_rsa $(System.DefaultWorkingDirectory)/kubernetes/azure/devops-pipelines/utils/create-kube-config.sh azureuser@$(VM_IP):~/create-kube-config.sh
-          
-          # Make the script executable and run it
-          ssh -o StrictHostKeyChecking=no -i ~/.ssh/id_rsa azureuser@$(VM_IP) "chmod +x ~/create-kube-config.sh && ~/create-kube-config.sh"
-        displayName: 'Execute Commands on VM'
-
-#      - template: './utils/install-nginx.yaml'
-#        parameters:
-#          KUBERNETES_SERVICE_CONNECTION: $(AZURE_SERVICE_CONNECTION_NAME)
-#          LB_INTERNAL_IP: $(INTERNAL_NGINX_CONTROLLER_LB_INTERNAL_IP)
-#          LB_INTERNAL_SUBNET: $(INTERNAL_NGINX_CONTROLLER_LB_INTERNAL_SUBNET)
+      - template: './utils/install-nginx.yaml'
+        parameters:
+          KUBERNETES_SERVICE_CONNECTION: $(AZURE_SERVICE_CONNECTION_NAME)
+          LB_INTERNAL_IP: $(INTERNAL_NGINX_CONTROLLER_LB_INTERNAL_IP)
+          LB_INTERNAL_SUBNET: $(INTERNAL_NGINX_CONTROLLER_LB_INTERNAL_SUBNET)

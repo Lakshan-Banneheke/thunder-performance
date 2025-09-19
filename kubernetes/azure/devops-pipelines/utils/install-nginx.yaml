@@ -15,14 +15,9 @@
 # under the License.
 
 parameters:
-  - name: KUBERNETES_SERVICE_CONNECTION
-    type: string
   - name: CHART_NAME
     type: string
     default: 'ingress-nginx'
-  - name: CHART_URL
-    type: string
-    default: "https://kubernetes.github.io/ingress-nginx"
   - name: CHART_VERSION
     type: string
     default: "4.13.2"
@@ -43,23 +38,10 @@ parameters:
     type: string
     default: 'true'
 
+variables:
+  - group: vg-thunder-perf
+
 steps:
-  - task: HelmDeploy@0
-    displayName: Helm Repo Add
-    inputs:
-      connectionType: 'Kubernetes Service Connection'
-      kubernetesServiceConnection: ${{parameters.KUBERNETES_SERVICE_CONNECTION}}
-      command: 'repo'
-      arguments: 'add ${{parameters.CHART_NAME}} ${{parameters.CHART_URL}}'
-
-  - task: HelmDeploy@0
-    displayName: Helm Repo Update
-    inputs:
-      connectionType: 'Kubernetes Service Connection'
-      kubernetesServiceConnection: ${{parameters.KUBERNETES_SERVICE_CONNECTION}}
-      command: 'repo'
-      arguments: 'update'
-
   - script: |
       echo '
       controller:
@@ -84,16 +66,22 @@ steps:
             service.beta.kubernetes.io/azure-load-balancer-health-probe-request-path: "/healthz"
           externalTrafficPolicy: Local
           loadBalancerIP: ${{ parameters.LB_INTERNAL_IP }}' > $(Agent.TempDirectory)/ingress_helm_values.yaml
-
     displayName: Generate Helm Values
-  - task: HelmDeploy@0
-    displayName: Helm Deploy
+
+  - task: AzureCLI@2
+    displayName: 'Install Nginx Ingress'
     inputs:
-      connectionType: 'Kubernetes Service Connection'
-      kubernetesServiceConnection: ${{ parameters.KUBERNETES_SERVICE_CONNECTION }}
-      namespace: ${{ parameters.NAMESPACE }}
-      chartName: '${{ parameters.CHART_NAME }}/ingress-nginx'
-      releaseName: ${{ parameters.RELEASE_NAME }}
-      command: 'upgrade'
-      arguments: '--create-namespace --version ${{ parameters.CHART_VERSION }} --debug'
-      valueFile: '$(Agent.TempDirectory)/ingress_helm_values.yaml'
+    azureSubscription: $(AZURE_SERVICE_CONNECTION_NAME)
+    scriptType: 'bash'
+    scriptLocation: 'inlineScript'
+    inlineScript: |
+      echo "Installing Nginx Ingress Controller..."
+      helm repo add ingress-nginx https://kubernetes.github.io/ingress-nginx
+      helm repo update
+      helm upgrade ${{ parameters.RELEASE_NAME }} ${{ parameters.CHART_NAME }}/ingress-nginx \
+        -n ${{ parameters.NAMESPACE }} \
+        --create-namespace \
+        --version ${{ parameters.CHART_VERSION }} \
+        -f $(Agent.TempDirectory)/ingress_helm_values.yaml
+      echo "Nginx Ingress Controller installed successfully"
+      
