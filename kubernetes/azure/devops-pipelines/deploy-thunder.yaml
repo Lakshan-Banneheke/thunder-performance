@@ -34,28 +34,21 @@ variables:
   - template: ./variables.yaml
 
 jobs:
-  - job: install_nginx_and_thunder
-    displayName: Install NGINX Ingress and Thunder
+  - job: install_nginx
+    condition: eq('${{ parameters.INSTALL_INTERNAL_NGINX_INGRESS }}', true)
+    displayName: Install NGINX
     steps:
-      - task: AzureCLI@2
-        displayName: 'Set AKS Credentials'
-        inputs:
-          azureSubscription: $(AZURE_SERVICE_CONNECTION_NAME)
-          scriptType: 'bash'
-          scriptLocation: 'inlineScript'
-          inlineScript: |
-            echo "Getting AKS Credentials"
-            az aks get-credentials --resource-group $(RESOURCE_GROUP_NAME) --name $(AKS_CLUSTER_NAME) --overwrite-existing --admin
-            echo "AKS Credentials set successfully"
-
+      - template: './utils/set-aks-credentials.yaml'
       - template: './utils/install-nginx.yaml'
-        condition: eq('${{ parameters.INSTALL_INTERNAL_NGINX_INGRESS }}', true)
         parameters:
-          AZURE_SERVICE_CONNECTION_NAME: $(AZURE_SERVICE_CONNECTION_NAME)
           LB_INTERNAL_IP: $(INTERNAL_NGINX_CONTROLLER_LB_INTERNAL_IP)
           LB_INTERNAL_SUBNET: $(INTERNAL_NGINX_CONTROLLER_LB_INTERNAL_SUBNET)
 
+  - job: create_tls_secret
+    condition: eq('${{ parameters.CREATE_TLS_SECRET }}', true)
+    displayName: Create TLS Secret
+    steps:
+      - template: './utils/set-aks-credentials.yaml'
       - template: './utils/create-tls-secret.yaml'
-        condition: eq('${{ parameters.CREATE_TLS_SECRET }}', true)
-        parameters:
-          AZURE_SERVICE_CONNECTION_NAME: $(AZURE_SERVICE_CONNECTION_NAME)
+
+
