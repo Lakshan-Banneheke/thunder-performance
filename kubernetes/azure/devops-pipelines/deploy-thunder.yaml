@@ -64,15 +64,15 @@ jobs:
     condition: eq('${{ parameters.CREATE_TLS_SECRET }}', true)
     displayName: Create Nginx TLS Secret
     steps:
-      - template: './utils/set-aks-credentials.yaml'
-      - template: './utils/create-tls-secret.yaml'
+      - template: './templates/set-aks-credentials.yaml'
+      - template: './templates/create-tls-secret.yaml'
 
   - job: install_nginx
     condition: eq('${{ parameters.INSTALL_INTERNAL_NGINX_INGRESS }}', true)
     displayName: Install NGINX Ingress Controller
     steps:
-      - template: './utils/set-aks-credentials.yaml'
-      - template: './utils/install-nginx.yaml'
+      - template: './templates/set-aks-credentials.yaml'
+      - template: './templates/install-nginx.yaml'
         parameters:
           LB_INTERNAL_IP: $(INTERNAL_NGINX_CONTROLLER_LB_INTERNAL_IP)
           LB_INTERNAL_SUBNET: $(INTERNAL_NGINX_CONTROLLER_LB_INTERNAL_SUBNET)
@@ -81,9 +81,9 @@ jobs:
     displayName: Install Thunder
     condition: eq('${{ parameters.INSTALL_THUNDER }}', true)
     steps:
-      - template: './utils/set-aks-credentials.yaml'
+      - template: './templates/set-aks-credentials.yaml'
       - checkout: thunder-repo
         path: "thunder-repo"
-      - template: './utils/install-thunder.yaml'
+      - template: './templates/install-thunder.yaml'
         parameters:
           WORKING_DIRECTORY: $(Agent.BuildDirectory)/thunder-repo/install/helm
