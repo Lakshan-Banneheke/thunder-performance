@@ -126,7 +126,7 @@ jobs:
           GITHUB_USERNAME: $(gitUsername)
           BUILD_TYPE: $(Build.Reason)
           BUILD_PATH: $(Build.ArtifactStagingDirectory)
-          DATABASE_HOST_NAME: 'wso2-thunder.postgres.database.azure.com' # TODO check if we can remove this
+          DATABASE_HOST_NAME: 'postgresql-thunder-perf-eastus2-001.postgres.database.azure.com' # TODO check if we can remove this
           THUNDER_HOST_NAME: 'thunder.local'
           POPULATE_TEST_DATA: ${{parameters.POPULATE_TEST_DATA}}
           RUN_MODE: ${{parameters.RUN_MODE}}
