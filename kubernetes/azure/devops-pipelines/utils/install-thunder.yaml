@@ -34,5 +34,5 @@ steps:
       workingDirectory: ${{ parameters.WORKING_DIRECTORY }}
       inlineScript: |
         echo "Installing Thunder Helm Chart"
-        helm install ${{ parameters.RELEASE_NAME}} .
+        helm upgrade --install ${{ parameters.RELEASE_NAME}} .
         echo "Thunder Helm Chart installed successfully"
