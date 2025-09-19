@@ -59,6 +59,13 @@ resources:
 
 
 jobs:
+  - job: create_tls_secret
+    condition: eq('${{ parameters.CREATE_TLS_SECRET }}', true)
+    displayName: Create Nginx TLS Secret
+    steps:
+      - template: './utils/set-aks-credentials.yaml'
+      - template: './utils/create-tls-secret.yaml'
+
   - job: install_nginx
     condition: eq('${{ parameters.INSTALL_INTERNAL_NGINX_INGRESS }}', true)
     displayName: Install NGINX Ingress Controller
@@ -68,13 +75,6 @@ jobs:
         parameters:
           LB_INTERNAL_IP: $(INTERNAL_NGINX_CONTROLLER_LB_INTERNAL_IP)
           LB_INTERNAL_SUBNET: $(INTERNAL_NGINX_CONTROLLER_LB_INTERNAL_SUBNET)
-
-  - job: create_tls_secret
-    condition: eq('${{ parameters.CREATE_TLS_SECRET }}', true)
-    displayName: Create Nginx TLS Secret
-    steps:
-      - template: './utils/set-aks-credentials.yaml'
-      - template: './utils/create-tls-secret.yaml'
 
   - job: install_thunder
     displayName: Install Thunder
