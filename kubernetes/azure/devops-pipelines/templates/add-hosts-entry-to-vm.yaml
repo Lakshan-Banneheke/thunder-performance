@@ -15,7 +15,6 @@
 # under the License.
 
 steps:
-
   - template: set-aks-credentials.yaml
   - template: get-bastion-node-ip.yaml
   - task: DownloadSecureFile@1
@@ -47,5 +46,5 @@ steps:
         
         echo "SSH into the VM and update /etc/hosts file"
         BASTION_NODE_IP=$(BASTION_NODE_IP)
+        sudo chmod 400 $(vmKey.secureFilePath)
         ssh -o StrictHostKeyChecking=no -i $(vmKey.secureFilePath) azureuser@$BASTION_NODE_IP "echo '$INGRESS_IP thunder.local' | sudo tee -a /etc/hosts"
-
