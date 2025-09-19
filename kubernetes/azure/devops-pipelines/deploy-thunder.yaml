@@ -25,6 +25,18 @@ parameters:
     displayName: Create TLS Secret
     type: boolean
     default: true
+  - name: INSTALL_THUNDER
+    displayName: Install Thunder
+    type: boolean
+    default: true
+  - name: THUNDER_REPO
+    type: string
+    displayName: "Thunder Repository"
+    default: "asgardeo/thunder"
+  - name: THUNDER_REPO_BRANCH
+    type: string
+    displayName: "Thunder Repository Branch"
+    default: "main"
 
 pool:
   vmImage: 'ubuntu-latest'
@@ -32,11 +44,24 @@ pool:
 variables:
   - group: vg-thunder-perf
   - template: ./variables.yaml
+  - name: THUNDER_REPO
+    value: ${{parameters.THUNDER_REPO}}
+  - name: THUNDER_REPO_BRANCH
+    value: ${{parameters.THUNDER_REPO_BRANCH}}
+
+resources:
+  repositories:
+    - repository: thunder-repo
+      type: github
+      endpoint: thunder-performance
+      name: $(THUNDER_REPO)
+      ref: $(THUNDER_REPO_BRANCH)
+
 
 jobs:
   - job: install_nginx
     condition: eq('${{ parameters.INSTALL_INTERNAL_NGINX_INGRESS }}', true)
-    displayName: Install NGINX
+    displayName: Install NGINX Ingress Controller
     steps:
       - template: './utils/set-aks-credentials.yaml'
       - template: './utils/install-nginx.yaml'
@@ -46,9 +71,18 @@ jobs:
 
   - job: create_tls_secret
     condition: eq('${{ parameters.CREATE_TLS_SECRET }}', true)
-    displayName: Create TLS Secret
+    displayName: Create Nginx TLS Secret
     steps:
       - template: './utils/set-aks-credentials.yaml'
       - template: './utils/create-tls-secret.yaml'
 
-
+  - job: install_thunder
+    displayName: Install Thunder
+    condition: eq('${{ parameters.INSTALL_THUNDER }}', true)
+    steps:
+      - template: './utils/set-aks-credentials.yaml'
+      - checkout: thunder-repo
+        path: "thunder-repo"
+      - template: './utils/install-thunder.yaml'
+        parameters:
+          WORKING_DIRECTORY: $(Agent.BuildDirectory)/thunder-repo/install/helm
