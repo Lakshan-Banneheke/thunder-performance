@@ -21,6 +21,10 @@ parameters:
     displayName: Install Internal NGINX Ingress
     type: boolean
     default: true
+  - name: CREATE_TLS_SECRET
+    displayName: Create TLS Secret
+    type: boolean
+    default: true
 
 pool:
   vmImage: 'ubuntu-latest'
@@ -42,11 +46,16 @@ jobs:
           inlineScript: |
             echo "Getting AKS Credentials"
             az aks get-credentials --resource-group $(RESOURCE_GROUP_NAME) --name $(AKS_CLUSTER_NAME) --overwrite-existing --admin
-            kubelogin convert-kubeconfig -l azurecli
             echo "AKS Credentials set successfully"
 
       - template: './utils/install-nginx.yaml'
+        condition: eq('${{ parameters.INSTALL_INTERNAL_NGINX_INGRESS }}', true)
         parameters:
           AZURE_SERVICE_CONNECTION_NAME: $(AZURE_SERVICE_CONNECTION_NAME)
           LB_INTERNAL_IP: $(INTERNAL_NGINX_CONTROLLER_LB_INTERNAL_IP)
           LB_INTERNAL_SUBNET: $(INTERNAL_NGINX_CONTROLLER_LB_INTERNAL_SUBNET)
+
+      - template: './utils/create-tls-secret.yaml'
+        condition: eq('${{ parameters.CREATE_TLS_SECRET }}', true)
+        parameters:
+          AZURE_SERVICE_CONNECTION_NAME: $(AZURE_SERVICE_CONNECTION_NAME)
