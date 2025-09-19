@@ -39,6 +39,7 @@ parameters:
     default: 'true'
 
 steps:
+  - template: set-aks-credentials.yaml
   - script: |
       echo '
       controller:

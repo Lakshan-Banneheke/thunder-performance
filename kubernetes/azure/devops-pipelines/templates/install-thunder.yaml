@@ -25,6 +25,7 @@ parameters:
     default: 'default'
 
 steps:
+  - template: set-aks-credentials.yaml
   - task: AzureCLI@2
     displayName: 'Install Thunder'
     inputs:

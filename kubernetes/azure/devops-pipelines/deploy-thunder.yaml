@@ -29,6 +29,10 @@ parameters:
     displayName: Install Thunder
     type: boolean
     default: true
+  - name: ADD_HOSTS_ENTRY
+    displayName: Add Hosts Entry to VM
+    type: boolean
+    default: true
   - name: THUNDER_REPO
     type: string
     displayName: "Thunder Repository"
@@ -64,14 +68,12 @@ jobs:
     condition: eq('${{ parameters.CREATE_TLS_SECRET }}', true)
     displayName: Create Nginx TLS Secret
     steps:
-      - template: './templates/set-aks-credentials.yaml'
       - template: './templates/create-tls-secret.yaml'
 
   - job: install_nginx
     condition: eq('${{ parameters.INSTALL_INTERNAL_NGINX_INGRESS }}', true)
     displayName: Install NGINX Ingress Controller
     steps:
-      - template: './templates/set-aks-credentials.yaml'
       - template: './templates/install-nginx.yaml'
         parameters:
           LB_INTERNAL_IP: $(INTERNAL_NGINX_CONTROLLER_LB_INTERNAL_IP)
@@ -81,9 +83,15 @@ jobs:
     displayName: Install Thunder
     condition: eq('${{ parameters.INSTALL_THUNDER }}', true)
     steps:
-      - template: './templates/set-aks-credentials.yaml'
       - checkout: thunder-repo
         path: "thunder-repo"
       - template: './templates/install-thunder.yaml'
         parameters:
           WORKING_DIRECTORY: $(Agent.BuildDirectory)/thunder-repo/install/helm
+
+  - job: add_hosts_entry_to_vm
+    displayName: Add Hosts Entry to VM
+    dependsOn: install_thunder
+    condition: eq('${{ parameters.ADD_HOSTS_ENTRY }}', true)
+    steps:
+      - template: './templates/add-hosts-entry-to-vm.yaml'
