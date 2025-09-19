@@ -15,6 +15,8 @@
 # under the License.
 
 parameters:
+  - name: AZURE_SERVICE_CONNECTION_NAME
+    type: string
   - name: CHART_NAME
     type: string
     default: 'ingress-nginx'
@@ -37,9 +39,6 @@ parameters:
   - name: AUTOSCALING_ENABLED
     type: string
     default: 'true'
-
-variables:
-  - group: vg-thunder-perf
 
 steps:
   - script: |
@@ -71,17 +70,17 @@ steps:
   - task: AzureCLI@2
     displayName: 'Install Nginx Ingress'
     inputs:
-    azureSubscription: $(AZURE_SERVICE_CONNECTION_NAME)
-    scriptType: 'bash'
-    scriptLocation: 'inlineScript'
-    inlineScript: |
-      echo "Installing Nginx Ingress Controller..."
-      helm repo add ingress-nginx https://kubernetes.github.io/ingress-nginx
-      helm repo update
-      helm upgrade ${{ parameters.RELEASE_NAME }} ${{ parameters.CHART_NAME }}/ingress-nginx \
-        -n ${{ parameters.NAMESPACE }} \
-        --create-namespace \
-        --version ${{ parameters.CHART_VERSION }} \
-        -f $(Agent.TempDirectory)/ingress_helm_values.yaml
-      echo "Nginx Ingress Controller installed successfully"
-      
+      azureSubscription: $(AZURE_SERVICE_CONNECTION_NAME)
+      scriptType: 'bash'
+      scriptLocation: 'inlineScript'
+      inlineScript: |
+        echo "Installing Nginx Ingress Controller..."
+        helm repo add ingress-nginx https://kubernetes.github.io/ingress-nginx
+        helm repo update
+        helm upgrade --install ${{ parameters.RELEASE_NAME }} ${{ parameters.CHART_NAME }}/ingress-nginx \
+          -n ${{ parameters.NAMESPACE }} \
+          --create-namespace \
+          --version ${{ parameters.CHART_VERSION }} \
+          -f $(Agent.TempDirectory)/ingress_helm_values.yaml
+        echo "Nginx Ingress Controller installed successfully"
+        

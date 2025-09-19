@@ -36,17 +36,17 @@ jobs:
       - task: AzureCLI@2
         displayName: 'Set AKS Credentials'
         inputs:
-        azureSubscription: $(AZURE_SERVICE_CONNECTION_NAME)
-        scriptType: 'bash'
-        scriptLocation: 'inlineScript'
-        inlineScript: |
-          echo "Getting AKS Credentials"
-          az aks get-credentials --resource-group $(RESOURCE_GROUP_NAME) --name $(AKS_CLUSTER_NAME) --overwrite-existing --admin
-          kubelogin convert-kubeconfig -l azurecli
-          echo "AKS Credentials set successfully"
+          azureSubscription: $(AZURE_SERVICE_CONNECTION_NAME)
+          scriptType: 'bash'
+          scriptLocation: 'inlineScript'
+          inlineScript: |
+            echo "Getting AKS Credentials"
+            az aks get-credentials --resource-group $(RESOURCE_GROUP_NAME) --name $(AKS_CLUSTER_NAME) --overwrite-existing --admin
+            kubelogin convert-kubeconfig -l azurecli
+            echo "AKS Credentials set successfully"
 
       - template: './utils/install-nginx.yaml'
         parameters:
-          KUBERNETES_SERVICE_CONNECTION: $(AZURE_SERVICE_CONNECTION_NAME)
+          AZURE_SERVICE_CONNECTION_NAME: $(AZURE_SERVICE_CONNECTION_NAME)
           LB_INTERNAL_IP: $(INTERNAL_NGINX_CONTROLLER_LB_INTERNAL_IP)
           LB_INTERNAL_SUBNET: $(INTERNAL_NGINX_CONTROLLER_LB_INTERNAL_SUBNET)
