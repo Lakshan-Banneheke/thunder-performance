@@ -15,8 +15,8 @@
 # under the License.
 
 steps:
-  - template: set-aks-credentials.yaml
-  - template: get-bastion-node-ip.yaml
+  - template: ./utils/set-aks-credentials.yaml
+  - template: ./utils/get-bastion-node-ip.yaml
   - task: DownloadSecureFile@1
     name: vmKey
     displayName: 'Download VM Key'
