@@ -25,6 +25,10 @@ parameters:
     displayName: Create TLS Secret
     type: boolean
     default: true
+  - name: POPULATE_DATABASE
+    displayName: Populate Database
+    type: boolean
+    default: true
   - name: INSTALL_THUNDER
     displayName: Install Thunder
     type: boolean
@@ -79,8 +83,19 @@ jobs:
           LB_INTERNAL_IP: $(INTERNAL_NGINX_CONTROLLER_LB_INTERNAL_IP)
           LB_INTERNAL_SUBNET: $(INTERNAL_NGINX_CONTROLLER_LB_INTERNAL_SUBNET)
 
+  - job: populate_db
+    displayName: Populate Database
+    condition: eq('${{ parameters.POPULATE_DATABASE }}', true)
+    steps:
+      - checkout: thunder-repo
+        path: "thunder-repo"
+      - template: './templates/populate-db.yaml'
+        parameters:
+          WORKING_DIRECTORY: $(Agent.BuildDirectory)/thunder-repo/backend
+
   - job: install_thunder
     displayName: Install Thunder
+    dependsOn: populate_db
     condition: eq('${{ parameters.INSTALL_THUNDER }}', true)
     steps:
       - checkout: thunder-repo

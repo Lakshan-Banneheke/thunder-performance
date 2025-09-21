@@ -14,6 +14,11 @@
 # specific language governing permissions and limitations
 # under the License.
 
+parameters:
+  - name: BASTION_USER
+    type: string
+    default: 'azureuser'
+
 steps:
   - template: ./utils/set-aks-credentials.yaml
   - template: ./utils/get-bastion-node-ip.yaml
@@ -47,4 +52,4 @@ steps:
         echo "SSH into the VM and update /etc/hosts file"
         BASTION_NODE_IP=$(BASTION_NODE_IP)
         sudo chmod 400 $(vmKey.secureFilePath)
-        ssh -o StrictHostKeyChecking=no -i $(vmKey.secureFilePath) azureuser@$BASTION_NODE_IP "echo '$INGRESS_IP thunder.local' | sudo tee -a /etc/hosts"
+        ssh -o StrictHostKeyChecking=no -i $(vmKey.secureFilePath) $BASTION_USER@$BASTION_NODE_IP "echo '$INGRESS_IP thunder.local' | sudo tee -a /etc/hosts"

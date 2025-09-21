@@ -108,5 +108,4 @@ install_helm
 install_az_cli
 install_java
 download_jmeter
-sudo chown -R $USER:$USER $HOME
 echo "[INFO]: VM setup completed."
