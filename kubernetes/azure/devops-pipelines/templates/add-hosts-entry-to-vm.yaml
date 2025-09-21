@@ -38,9 +38,20 @@ steps:
         # Get the IP of the thunder-perf-ingress
         INGRESS_IP=$(kubectl get ingress $(THUNDER_KUBERNETES_INGRESS) -o jsonpath='{.status.loadBalancer.ingress[0].ip}')
         
-        # Check if the ingress IP is empty and fail the task if it is
+        # Check if the ingress IP is empty and retry after waiting
+        RETRY_COUNT=0
+        MAX_RETRIES=3
+        
+        while [ -z "$INGRESS_IP" ] && [ $RETRY_COUNT -lt $MAX_RETRIES ]; do
+          echo "Ingress IP for $(THUNDER_KUBERNETES_INGRESS) is empty. Waiting 20 seconds and retrying... (Attempt $((RETRY_COUNT+1))/$MAX_RETRIES)"
+          sleep 20
+          INGRESS_IP=$(kubectl get ingress $(THUNDER_KUBERNETES_INGRESS) -o jsonpath='{.status.loadBalancer.ingress[0].ip}')
+          RETRY_COUNT=$((RETRY_COUNT+1))
+        done
+        
+        # If still empty after retries, fail the task
         if [ -z "$INGRESS_IP" ]; then
-          echo "##vso[task.logissue type=error]The ingress IP for $(THUNDER_KUBERNETES_INGRESS) is empty. Please ensure the ingress is properly configured and has an assigned IP address."
+          echo "##vso[task.logissue type=error]The ingress IP for $(THUNDER_KUBERNETES_INGRESS) is still empty after $MAX_RETRIES retries. Please ensure the ingress is properly configured and has an assigned IP address."
           echo "##vso[task.complete result=Failed;]"
           exit 1
         fi
@@ -50,6 +61,7 @@ steps:
         echo "Thunder ingress IP: $INGRESS_IP"
         
         echo "SSH into the VM and update /etc/hosts file"
+        BASTION_USER=${{ parameters.BASTION_USER }}
         BASTION_NODE_IP=$(BASTION_NODE_IP)
         sudo chmod 400 $(vmKey.secureFilePath)
         ssh -o StrictHostKeyChecking=no -i $(vmKey.secureFilePath) $BASTION_USER@$BASTION_NODE_IP "echo '$INGRESS_IP thunder.local' | sudo tee -a /etc/hosts"

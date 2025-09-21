@@ -96,7 +96,7 @@ jobs:
   - job: install_thunder
     displayName: Install Thunder
     dependsOn: populate_db
-    condition: eq('${{ parameters.INSTALL_THUNDER }}', true)
+    condition: and(succeeded('populate_db'), eq('${{ parameters.INSTALL_THUNDER }}', true))
     steps:
       - checkout: thunder-repo
         path: "thunder-repo"
