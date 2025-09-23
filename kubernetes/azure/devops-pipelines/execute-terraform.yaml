@@ -267,6 +267,9 @@ stages:
               scriptLocation: "inlineScript"
               inlineScript: |
                 echo "Running Terraform apply"
+                
+                cat ../conf/thunder.conf.secrets.tfvars
+                
                 terraform apply \
                   -var-file="../conf/thunder.conf.secrets.tfvars" \
                   -var-file="../conf/thunder.conf.tfvars" \
