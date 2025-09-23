@@ -56,10 +56,6 @@ parameters:
     displayName: Populate test data
     type: string
     default: false
-  - name: BASTION_NODE_IP
-    displayName: Bastion Node IP
-    type: string
-    default: "68.220.202.33"
   - name: python_version
     displayName: Python Version
     default: 3.9
@@ -112,6 +108,9 @@ jobs:
           sudo mv $(vmKey.secureFilePath) ~/.ssh/azure_id_rsa
           sudo chmod 400 ~/.ssh/azure_id_rsa
         displayName: 'Setup VM SSH Key'
+
+      - template: ./utils/get-bastion-node-ip.yaml
+
       - task: AzureCLI@2
         displayName: Initiate performance test run
         inputs:
@@ -134,7 +133,7 @@ jobs:
           POPULATE_TEST_DATA: ${{parameters.POPULATE_TEST_DATA}}
           RUN_MODE: ${{parameters.RUN_MODE}}
           CONCURRENCY: ${{parameters.CONCURRENCY}}
-          BASTION_NODE_IP: ${{parameters.BASTION_NODE_IP}}
+          BASTION_NODE_IP: $(BASTION_NODE_IP)
 
       - task: PublishPipelineArtifact@1
         displayName: Publish pipeline artifacts
