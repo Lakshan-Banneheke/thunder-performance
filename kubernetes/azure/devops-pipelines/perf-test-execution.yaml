@@ -22,6 +22,18 @@ pool:
   vmImage: 'ubuntu-latest'
 
 parameters:
+  - name: SCALE_UP_ENVIRONMENT
+    displayName: 'Scale up Perf environment'
+    type: boolean
+    default: false
+  - name: EXECUTE_PERF_TEST
+    displayName: 'Execute performance test'
+    type: boolean
+    default: true
+  - name: SCALE_DOWN_ENVIRONMENT
+    displayName: 'Scale down Perf environment'
+    type: boolean
+    default: false
   - name: PERFORMANCE_IS_REPO
     displayName: Performance IS repo name
     type: string
@@ -78,8 +90,45 @@ resources:
       ref: $(PERFORMANCE_IS_THUNDER_BRANCH)
 
 jobs:
+  - job: scale_up_env
+    displayName: 'Scale Up Environment'
+    condition: eq(${{ parameters.SCALE_UP_ENVIRONMENT }}, True)
+    steps:
+      - task: AzureCLI@2
+        displayName: 'Start Virtual Machine'
+        inputs:
+          azureSubscription: 'thunder-perf-workload-identity'
+          scriptType: 'bash'
+          scriptLocation: 'inlineScript'
+          inlineScript: |
+            echo "Starting Virtual Machine..."
+            az vm start --name $(VM_NAME) --resource-group $(RESOURCE_GROUP_NAME)
+            echo "Virtual Machine started successfully"
+      - task: AzureCLI@2
+        displayName: 'Start AKS Cluster'
+        inputs:
+          azureSubscription: 'thunder-perf-workload-identity'
+          scriptType: 'bash'
+          scriptLocation: 'inlineScript'
+          inlineScript: |
+            echo "Starting AKS Cluster..."
+            az aks start --name $(AKS_CLUSTER_NAME) --resource-group $(RESOURCE_GROUP_NAME)
+            echo "AKS Cluster started successfully"
+      - task: AzureCLI@2
+        displayName: 'Start Postgres Server'
+        inputs:
+          azureSubscription: 'thunder-perf-workload-identity'
+          scriptType: 'bash'
+          scriptLocation: 'inlineScript'
+          inlineScript: |
+            echo "Starting Postgres Server..."
+            az postgres flexible-server start --name $(POSTGRES_SERVER_NAME) --resource-group $(RESOURCE_GROUP_NAME)
+            echo "Postgres Server started successfully"
+
   - job: thunder_performance_test
     displayName: Asgardeo performance test
+    dependsOn: scale_up_env
+    condition: eq(${{ parameters.EXECUTE_PERF_TEST }}, True)
     # Change the timeout as required when running tests with data population
     timeoutInMinutes: 1200
     cancelTimeoutInMinutes: 1
@@ -150,3 +199,39 @@ jobs:
           source: 'current'
           artifact: PerformanceTestResults
           path: '$(Pipeline.Workspace)/PerformanceTestResults'
+
+  - job: scale_down_env
+    displayName: 'Scale Down Environment'
+    condition: eq(${{ parameters.SCALE_DOWN_ENVIRONMENT }}, True)
+    dependsOn: thunder_performance_test
+    steps:
+      - task: AzureCLI@2
+        displayName: 'Stop Virtual Machine'
+        inputs:
+          azureSubscription: 'thunder-perf-workload-identity'
+          scriptType: 'bash'
+          scriptLocation: 'inlineScript'
+          inlineScript: |
+            echo "Stopping Virtual Machine..."
+            az vm deallocate --name $(VM_NAME) --resource-group $(RESOURCE_GROUP_NAME)
+            echo "Virtual Machine stopped successfully"
+      - task: AzureCLI@2
+        displayName: 'Stop AKS Cluster'
+        inputs:
+          azureSubscription: 'thunder-perf-workload-identity'
+          scriptType: 'bash'
+          scriptLocation: 'inlineScript'
+          inlineScript: |
+            echo "Stopping AKS Cluster..."
+            az aks stop --name $(AKS_CLUSTER_NAME) --resource-group $(RESOURCE_GROUP_NAME)
+            echo "AKS Cluster stopped successfully"
+      - task: AzureCLI@2
+        displayName: 'Stop Postgres Server'
+        inputs:
+          azureSubscription: 'thunder-perf-workload-identity'
+          scriptType: 'bash'
+          scriptLocation: 'inlineScript'
+          inlineScript: |
+            echo "Stopping Postgres Server..."
+            az postgres flexible-server stop --name $(POSTGRES_SERVER_NAME) --resource-group $(RESOURCE_GROUP_NAME)
+            echo "Postgres Server stopped successfully"
