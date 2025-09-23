@@ -32,7 +32,7 @@ steps:
   - task: AzureCLI@2
     displayName: 'Populate Postgres Database'
     inputs:
-      azureSubscription: '$(AZURE_SERVICE_CONNECTION_NAME)'
+      azureSubscription: $(AZURE_SERVICE_CONNECTION_NAME)
       scriptType: 'bash'
       scriptLocation: 'inlineScript'
       workingDirectory: ${{ parameters.WORKING_DIRECTORY }}

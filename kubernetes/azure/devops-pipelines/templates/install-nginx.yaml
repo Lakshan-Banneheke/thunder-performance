@@ -82,4 +82,3 @@ steps:
           --version ${{ parameters.CHART_VERSION }} \
           -f $(Agent.TempDirectory)/ingress_helm_values.yaml
         echo "Nginx Ingress Controller installed successfully"
-        

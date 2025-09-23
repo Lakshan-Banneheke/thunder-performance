@@ -31,7 +31,7 @@ steps:
   - task: AzureCLI@2
     displayName: 'Add Thunder Ingress IP to Hosts File of VM'
     inputs:
-      azureSubscription: '$(AZURE_SERVICE_CONNECTION_NAME)'
+      azureSubscription: $(AZURE_SERVICE_CONNECTION_NAME)
       scriptType: 'bash'
       scriptLocation: 'inlineScript'
       inlineScript: |
