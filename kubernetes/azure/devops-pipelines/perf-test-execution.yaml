@@ -34,14 +34,14 @@ parameters:
     displayName: 'Scale down Perf environment'
     type: boolean
     default: false
-  - name: PERFORMANCE_IS_REPO
-    displayName: Performance IS repo name
+  - name: PERFORMANCE_REPO
+    displayName: Performance repo name
     type: string
-    default: Lakshan-Banneheke/performance-is
-  - name: PERFORMANCE_IS_THUNDER_BRANCH
-    displayName: Performance IS repo branch name
+    default: wso2/performance-is
+  - name: PERFORMANCE_REPO_BRANCH
+    displayName: Performance repo branch name
     type: string
-    default: thunder-new
+    default: thunder
   - name: CONCURRENCY
     displayName: Concurrency
     type: string
@@ -68,26 +68,23 @@ parameters:
     displayName: Populate test data
     type: string
     default: false
-  - name: python_version
-    displayName: Python Version
-    default: 3.9
-    values:
-      - 3.9
 
 variables:
   - group: vg-thunder-perf
-  - name: PERFORMANCE_IS_REPO
-    value: ${{parameters.PERFORMANCE_IS_REPO}}
-  - name: PERFORMANCE_IS_THUNDER_BRANCH
-    value: ${{parameters.PERFORMANCE_IS_THUNDER_BRANCH}}
+  - name: PERFORMANCE_REPO
+    value: ${{parameters.PERFORMANCE_REPO}}
+  - name: PERFORMANCE_REPO_BRANCH
+    value: ${{parameters.PERFORMANCE_REPO_BRANCH}}
+  - name: PYTHON_VERSION
+    value: 3.9
 
 resources:
   repositories:
     - repository: performance-is
       type: github
       endpoint: thunder-performance
-      name: $(PERFORMANCE_IS_REPO)
-      ref: $(PERFORMANCE_IS_THUNDER_BRANCH)
+      name: $(PERFORMANCE_REPO)
+      ref: $(PERFORMANCE_REPO_BRANCH)
 
 jobs:
   - job: scale_up_env
@@ -126,7 +123,7 @@ jobs:
             echo "Postgres Server started successfully"
 
   - job: thunder_performance_test
-    displayName: Asgardeo performance test
+    displayName: Thunder performance test
     dependsOn: scale_up_env
     condition: eq(${{ parameters.EXECUTE_PERF_TEST }}, True)
     # Change the timeout as required when running tests with data population
@@ -142,8 +139,8 @@ jobs:
 
       - task: UsePythonVersion@0
         inputs:
-          versionSpec:  '${{ parameters.python_version }}'
-        displayName: 'Use Python ${{ parameters.python_version }}'
+          versionSpec:  '$(PYTHON_VERSION)'
+        displayName: 'Use Python $(PYTHON_VERSION)'
 
       - task: DownloadSecureFile@1
         name: vmKey
@@ -172,7 +169,7 @@ jobs:
         env:
           BUILD_NUM: $(Build.BuildNumber)
           BUILD_PURPOSE: ${{parameters.BUILD_PURPOSE}}
-          BRANCH: ${{parameters.PERFORMANCE_IS_THUNDER_BRANCH}}
+          BRANCH: ${{parameters.PERFORMANCE_REPO_BRANCH}}
           GITHUB_USER_EMAIL: $(gitEmail)
           GITHUB_USERNAME: $(gitUsername)
           BUILD_TYPE: $(Build.Reason)
