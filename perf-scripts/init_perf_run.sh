@@ -1,35 +1,27 @@
 #!/bin/bash +x
+# Copyright (c) 2025, WSO2 LLC. (https://www.wso2.com).
 #
-#  Copyright (c) 2025, WSO2 LLC. (https://www.wso2.com).
+# WSO2 LLC. licenses this file to you under the Apache License,
+# Version 2.0 (the "License"); you may not use this file except
+# in compliance with the License.
+# You may obtain a copy of the License at
 #
-#  WSO2 LLC. licenses this file to you under the Apache License,
-#  Version 2.0 (the "License"); you may not use this file except
-#  in compliance with the License.
-#  You may obtain a copy of the License at
+# http://www.apache.org/licenses/LICENSE-2.0
 #
-#  http://www.apache.org/licenses/LICENSE-2.0
-#
-#  Unless required by applicable law or agreed to in writing,
-#  software distributed under the License is distributed on an
-#  "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
-#  KIND, either express or implied. See the License for the
-#  specific language governing permissions and limitations
-#  under the License.
-#
+# Unless required by applicable law or agreed to in writing,
+# software distributed under the License is distributed on an
+# "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+# KIND, either express or implied. See the License for the
+# specific language governing permissions and limitations
+# under the License.
 
-BUILD_JOB_NAME="thunder-performance-pre-provisioned-wso2.com"
-
-# Create workspace. 
+# Create workspace
 BUILD_DIR=$(pwd)
 RESOURCES_DIR=$BUILD_DIR/resources
 cd $BUILD_DIR
-mkdir resources
-dig +short myip.opendns.com @resolver1.opendns.com
+mkdir -p resources
 echo "Build Dir:$BUILD_DIR | Resources_Dir: $RESOURCES_DIR | Workspace: $WORKSPACE"
-cmd=""
 MODE=$RUN_MODE
-
-echo "$BUILD_TYPE"
 
 echo ""
 echo "Starting performance test with params:"
@@ -42,8 +34,6 @@ curl -s -i https://thunder.local/health/liveness | head -1
 
 echo "Changing Directory to Thunder Product Repository | Branch: $BRANCH"
 cd $WORKSPACE
-
-# wget -P "$RESOURCES_DIR" https://archive.apache.org/dist/jmeter/binaries/apache-jmeter-3.3.tgz
 
 cd pre-provisioned
 
@@ -59,7 +49,7 @@ echo "=========================================================="
   
 # Define and execute start-performance command.
 echo "Bastion IP init: $BASTION_NODE_IP"
-cmd="./start-performance.sh -j $RESOURCES_DIR/apache-jmeter-3.3.tgz -b $BASTION_NODE_IP -n $DATABASE_HOST_NAME -d $THUNDER_HOST_NAME -t $MODE -- -d 2 -w 2 -q $POPULATE_TEST_DATA -r $CONCURRENCY"
+cmd="./start-performance.sh -b $BASTION_NODE_IP -n $DATABASE_HOST_NAME -d $THUNDER_HOST_NAME -t $MODE -- -d 5 -w 2 -q $POPULATE_TEST_DATA -r $CONCURRENCY"
 # TODO change -d above to 15 mins
 
 $cmd
