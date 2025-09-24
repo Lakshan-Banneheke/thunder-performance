@@ -218,12 +218,13 @@ jobs:
           GITHUB_USERNAME: $(gitUsername)
           BUILD_TYPE: $(Build.Reason)
           BUILD_PATH: $(Build.ArtifactStagingDirectory)
-          DATABASE_HOST_NAME: 'postgresql-thunder-perf-eastus2-001.postgres.database.azure.com'
+          DATABASE_HOST_NAME: 'postgresql-thunder-perf-eastus2-001.postgres.database.azure.com' #TODO check if we can remove
           THUNDER_HOST_NAME: 'thunder.local'
           POPULATE_TEST_DATA: ${{parameters.POPULATE_TEST_DATA}}
           RUN_MODE: ${{parameters.RUN_MODE}}
           CONCURRENCY: ${{parameters.CONCURRENCY}}
           BASTION_NODE_IP: $(BASTION_NODE_IP)
+          WORKSPACE: '$(Agent.BuildDirectory)/s/thunder-performance/perf-scripts'
 
       - task: PublishPipelineArtifact@1
         displayName: Publish pipeline artifacts

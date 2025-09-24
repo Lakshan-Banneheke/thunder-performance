@@ -17,12 +17,11 @@
 #  under the License.
 #
 
-BUILD_JOB_NAME="thunder-performance-is-pre-provisioned-wso2.com"
+BUILD_JOB_NAME="thunder-performance-pre-provisioned-wso2.com"
 
 # Create workspace. 
 BUILD_DIR=$(pwd)
 RESOURCES_DIR=$BUILD_DIR/resources
-WORKSPACE=$BUILD_DIR/performance-is
 cd $BUILD_DIR
 mkdir resources
 dig +short myip.opendns.com @resolver1.opendns.com
@@ -60,7 +59,8 @@ echo "=========================================================="
   
 # Define and execute start-performance command.
 echo "Bastion IP init: $BASTION_NODE_IP"
-cmd="./start-performance.sh -j $RESOURCES_DIR/apache-jmeter-3.3.tgz -b $BASTION_NODE_IP -n $DATABASE_HOST_NAME -d $THUNDER_HOST_NAME -t $MODE -- -d 15 -w 2 -q $POPULATE_TEST_DATA -r $CONCURRENCY"
+cmd="./start-performance.sh -j $RESOURCES_DIR/apache-jmeter-3.3.tgz -b $BASTION_NODE_IP -n $DATABASE_HOST_NAME -d $THUNDER_HOST_NAME -t $MODE -- -d 2 -w 2 -q $POPULATE_TEST_DATA -r $CONCURRENCY"
+# TODO change -d above to 15 mins
 
 $cmd
 

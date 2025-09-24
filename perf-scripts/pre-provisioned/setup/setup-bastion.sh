@@ -90,7 +90,7 @@ cd workspace || exit 0
 echo ""
 echo "Extracting cloud performance distribution..."
 echo "============================================"
-tar -C /home/$bastion_user/workspace -xzf /home/$bastion_user/is-performance-pre-provisioned-*.tar.gz
+tar -C /home/$bastion_user/workspace -xzf /home/$bastion_user/thunder-performance-pre-provisioned-*.tar.gz
 
 echo ""
 echo "Running JMeter setup script..."
