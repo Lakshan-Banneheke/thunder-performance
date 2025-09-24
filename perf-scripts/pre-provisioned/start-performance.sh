@@ -15,8 +15,6 @@
 # specific language governing permissions and limitations
 # under the License.
 
-source ../common/common-functions.sh
-
 timestamp=$(date +%Y-%m-%d--%H-%M-%S)
 
 bastion_user="azureuser"
@@ -78,11 +76,6 @@ echo "Bastion IP address: $bastion_node_ip"
 
 run_performance_tests_options+=(" -l $cloud_host_name -v $mode")
 echo $run_performance_tests_options
-
-check_command bc
-check_command unzip
-check_command jq
-check_command python
 
 mkdir "$results_dir"
 echo ""
