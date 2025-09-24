@@ -1,7 +1,7 @@
 #!/bin/bash -e
-# Copyright (c) 2021, WSO2 Inc. (http://wso2.org) All Rights Reserved.
+# Copyright (c) 2025, WSO2 LLC. (https://www.wso2.com).
 #
-# WSO2 Inc. licenses this file to you under the Apache License,
+# WSO2 LLC. licenses this file to you under the Apache License,
 # Version 2.0 (the "License"); you may not use this file except
 # in compliance with the License.
 # You may obtain a copy of the License at
@@ -11,7 +11,7 @@
 # Unless required by applicable law or agreed to in writing,
 # software distributed under the License is distributed on an
 # "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
-# KIND, either express or implied.  See the License for the
+# KIND, either express or implied. See the License for the
 # specific language governing permissions and limitations
 # under the License.
 #
@@ -40,11 +40,10 @@
 #
 # In above functions, following variables may be used
 # 1. scenario_name
-# 2. heap
-# 3. users
-# 4. msize
-# 5. sleep_time
-# 6. report_location
+# 2. users
+# 3. msize
+# 4. sleep_time
+# 5. report_location
 #
 # Use jmeter_params array in before_execute_test_scenario to provide JMeter parameters.
 #
@@ -55,9 +54,6 @@
 
 # Concurrent users (these will by multiplied by the number of JMeter servers)
 default_concurrent_users="100 300 500"
-quick_mode_concurrent_users="200"
-# Application heap Sizes
-default_heap_sizes="4G"
 
 # Test Duration in minutes
 default_test_duration=15
@@ -80,8 +76,8 @@ estimate=false
 default_estimated_processing_time_in_between_tests=220
 estimated_processing_time_in_between_tests=$default_estimated_processing_time_in_between_tests
 
-default_is_port=8090
-is_port=$default_is_port
+default_thunder_port=8090
+thunder_port=$default_thunder_port
 
 # Start time of the test
 test_start_time=$(date +%s)
@@ -95,22 +91,16 @@ noOfTenants=100
 spCount=10
 userCount=1000
 mode=""
-
-function get_ssh_hostname() {
-    ssh -G "$1" | awk '/^hostname / { print $2 }'
-}
-
 lb_host=""
 
 function usage() {
     echo ""
     echo "Usage: "
-    echo "$0 [-c <concurrent_users>] [-m <heap_sizes>] [-d <test_duration>] [-w <warm_up_time>]"
+    echo "$0 [-c <concurrent_users>] [-d <test_duration>] [-w <warm_up_time>]"
     echo "   [-j <jmeter_client_heap_size>] [-i <include_scenario_name>] [-e <exclude_scenario_name>]"
-    echo "   [-t] [-p <is_port>] [-h]"
+    echo "   [-t] [-p <thunder_port>] [-h]"
     echo ""
     echo "-r: Concurrency levels to test. You can give multiple options to specify multiple levels. Default \"$default_concurrent_users\"."
-    echo "-m: Application heap memory sizes. You can give multiple options to specify multiple heap memory sizes. Default \"$default_heap_sizes\"."
     echo "-d: Test Duration in minutes. Default $default_test_duration m."
     echo "-w: Warm-up time in minutes. Default $default_warm_up_time m."
     echo "-j: Heap Size of JMeter Client. Default $default_jmeter_client_heap_size."
@@ -119,19 +109,16 @@ function usage() {
     echo "-l: Host name."
     echo "-q: Populate test data. Default true."
     echo "-t: Estimate time without executing tests."
-    echo "-p: Identity Server Port. Default $default_is_port."
+    echo "-p: Thunder Port. Default $default_thunder_port."
     echo "-v: Specify testing mode [FULL/QUICK]"
     echo "-h: Display this help and exit."
     echo ""
 }
 
-while getopts "c:m:d:w:r:j:i:e:x:y:z:t:p:l:q:v:h" opts; do
+while getopts "c:d:w:r:j:i:e:x:y:z:t:p:l:q:v:h" opts; do
     case $opts in
     c)
         concurrent_users+=("${OPTARG}")
-        ;;
-    m)
-        heap_sizes+=("${OPTARG}")
         ;;
     d)
         test_duration=${OPTARG}
@@ -164,7 +151,7 @@ while getopts "c:m:d:w:r:j:i:e:x:y:z:t:p:l:q:v:h" opts; do
         estimate=true
         ;;
     p)
-        is_port=${OPTARG}
+        thunder_port=${OPTARG}
         ;;
     l)
         lb_host=${OPTARG}
@@ -244,13 +231,6 @@ if ! [[ $jmeter_client_heap_size =~ $heap_regex ]]; then
     exit 1
 fi
 
-declare -ag heap_sizes_array
-if [ ${#heap_sizes[@]} -eq 0 ]; then
-    heap_sizes_array=( $default_heap_sizes )
-else
-    heap_sizes_array=( ${heap_sizes[@]} )
-fi
-
 declare -ag concurrent_users_array
 echo -n "Concurrent Users: ${concurrent_users[@]}"
 printf "%s " "${concurrent_users[@]}"
@@ -264,13 +244,6 @@ fi
 echo -n "Concurrent Users Array: "
 printf "%s " "${concurrent_users_array[@]}"
 echo
-
-for heap in ${heap_sizes_array[@]}; do
-    if ! [[ $heap =~ $heap_regex ]]; then
-        echo "Please specify a valid heap size for the application."
-        exit 1
-    fi
-done
 
 for users in ${concurrent_users_array[@]}; do
     if ! [[ $users =~ $number_regex ]]; then
@@ -397,7 +370,7 @@ function run_test_data_scripts() {
 
     for script in "${scripts[@]}"; do
         script_file="$setup_dir/$script"
-        command="jmeter -Jhost=$lb_host -Jport=$is_port -n -t $script_file"
+        command="jmeter -Jhost=$lb_host -Jport=$thunder_port -n -t $script_file"
         echo "$command"
         echo ""
         $command
@@ -461,13 +434,12 @@ function initiailize_test() {
     test_parameters_json+=' | .["warmup_time"]=$warmup_time'
     test_parameters_json+=' | .["jmeter_client_heap_size"]=$jmeter_client_heap_size'
     test_parameters_json+=' | .["test_scenarios"]=$test_scenarios'
-    test_parameters_json+=' | .["heap_sizes"]=$heap_sizes | .["concurrent_users"]=$concurrent_users'
+    test_parameters_json+=' | .["concurrent_users"]=$concurrent_users'
     jq -n \
         --arg test_duration "$test_duration" \
         --arg warmup_time "$warm_up_time" \
         --arg jmeter_client_heap_size "$jmeter_client_heap_size" \
         --argjson test_scenarios "$(echo "$all_scenarios" | jq -s '.')" \
-        --argjson heap_sizes "$(printf '%s\n' "${heap_sizes_array[@]}" | jq -nR '[inputs]')" \
         --argjson concurrent_users "$(printf '%s\n' "${concurrent_users_array[@]}" | jq -nR '[inputs]')" \
         "$test_parameters_json" > test-metadata.json
 
@@ -518,74 +490,72 @@ function test_scenarios() {
     
     echo "Concurrent Users: ${concurrent_users_array[@]}"
     initiailize_test
-    for heap in "${heap_sizes_array[@]}"; do
-        declare -ng scenario
-        for scenario in ${!test_scenario@}; do
-            local skip=${scenario[skip]}
-            if [ "$skip" = true ]; then
+    declare -ng scenario
+    for scenario in ${!test_scenario@}; do
+        local skip=${scenario[skip]}
+        if [ "$skip" = true ]; then
+            continue
+        fi
+        local scenario_name=${scenario[name]}
+        local jmx_file=${scenario[jmx]}
+        for users in "${concurrent_users_array[@]}"; do
+            if [ "$estimate" = true ]; then
+                record_scenario_duration "$scenario_name" $((test_duration * 60 + estimated_processing_time_in_between_tests))
                 continue
             fi
-            local scenario_name=${scenario[name]}
-            local jmx_file=${scenario[jmx]}
-            for users in "${concurrent_users_array[@]}"; do
-                if [ "$estimate" = true ]; then
-                    record_scenario_duration "$scenario_name" $((test_duration * 60 + estimated_processing_time_in_between_tests))
-                    continue
-                fi
-                local start_time=$(date +%s)
+            local start_time=$(date +%s)
 
-                local scenario_desc="Scenario Name: $scenario_name, Duration: $test_duration m, Concurrent Users: $users"
-                echo "# Starting the performance test"
-                echo "$scenario_desc"
-                echo "=========================================================================================="
+            local scenario_desc="Scenario Name: $scenario_name, Duration: $test_duration m, Concurrent Users: $users"
+            echo "# Starting the performance test"
+            echo "$scenario_desc"
+            echo "=========================================================================================="
 
-                report_location=$PWD/results/${scenario_name}/${heap}_heap/${users}_users
+            report_location=$PWD/results/${scenario_name}/default/${users}_users
 
-                echo ""
-                echo "Report location is $report_location"
-                mkdir -p "$report_location"
-                time=$(expr "$test_duration" \* 60)
-                declare -ag jmeter_params=("concurrency=$users" "time=$time" "host=$lb_host" "port=$is_port")
-                local tenantMode=${scenario[tenantMode]}
-                if [ "$tenantMode" = true ]; then
-                      jmeter_params+=" -JtenantMode=true -JnoOfTenants=$noOfTenants -JspCount=$spCount -JuserCount=$userCount"
-                fi
+            echo ""
+            echo "Report location is $report_location"
+            mkdir -p "$report_location"
+            time=$(expr "$test_duration" \* 60)
+            declare -ag jmeter_params=("concurrency=$users" "time=$time" "host=$lb_host" "port=$thunder_port")
+            local tenantMode=${scenario[tenantMode]}
+            if [ "$tenantMode" = true ]; then
+                  jmeter_params+=" -JtenantMode=true -JnoOfTenants=$noOfTenants -JspCount=$spCount -JuserCount=$userCount"
+            fi
 
-                before_execute_test_scenario
+            before_execute_test_scenario
 
-                export JVM_ARGS="-server -Xms$jmeter_client_heap_size -Xmx$jmeter_client_heap_size -XX:+PrintGC -XX:+PrintGCDetails -XX:+PrintGCDateStamps -Xloggc:$report_location/jmeter_gc.log $JMETER_JVM_ARGS"
+            export JVM_ARGS="-server -Xms$jmeter_client_heap_size -Xmx$jmeter_client_heap_size -XX:+PrintGC -XX:+PrintGCDetails -XX:+PrintGCDateStamps -Xloggc:$report_location/jmeter_gc.log $JMETER_JVM_ARGS"
 
-                local jmeter_command="jmeter -n -t $script_dir/$jmx_file"
-                for param in "${jmeter_params[@]}"; do
-                    jmeter_command+=" -J$param"
-                done
-
-                jmeter_command+=" -l $report_location/results.jtl"
-
-                echo $jmeter_command
-
-                echo ""
-                echo "Starting JMeter Client with JVM_ARGS=$JVM_ARGS"
-                echo ""
-                echo "Running JMeter command: $jmeter_command"
-                $jmeter_command
-
-                write_server_metrics jmeter
-
-                "$HOME"/workspace/jtl-splitter/jtl-splitter.sh -- -f "$report_location"/results.jtl -t "$warm_up_time" -s
-
-                # after_execute_test_scenario
-
-                echo ""
-                echo "Zipping JTL files in $report_location"
-                zip -jm "$report_location"/jtls.zip "$report_location"/results*.jtl
-
-                local current_execution_duration="$(measure_time "$start_time")"
-                echo -n "# Completed the performance test."
-                echo " $scenario_desc"
-                echo -e "Test execution time: $(format_time "$current_execution_duration")\n"
-                record_scenario_duration "$scenario_name" "$current_execution_duration"
+            local jmeter_command="jmeter -n -t $script_dir/$jmx_file"
+            for param in "${jmeter_params[@]}"; do
+                jmeter_command+=" -J$param"
             done
+
+            jmeter_command+=" -l $report_location/results.jtl"
+
+            echo $jmeter_command
+
+            echo ""
+            echo "Starting JMeter Client with JVM_ARGS=$JVM_ARGS"
+            echo ""
+            echo "Running JMeter command: $jmeter_command"
+            $jmeter_command
+
+            write_server_metrics jmeter
+
+            "$HOME"/workspace/jtl-splitter/jtl-splitter.sh -- -f "$report_location"/results.jtl -t "$warm_up_time" -s
+
+            # after_execute_test_scenario
+
+            echo ""
+            echo "Zipping JTL files in $report_location"
+            zip -jm "$report_location"/jtls.zip "$report_location"/results*.jtl
+
+            local current_execution_duration="$(measure_time "$start_time")"
+            echo -n "# Completed the performance test."
+            echo " $scenario_desc"
+            echo -e "Test execution time: $(format_time "$current_execution_duration")\n"
+            record_scenario_duration "$scenario_name" "$current_execution_duration"
         done
     done
 }
