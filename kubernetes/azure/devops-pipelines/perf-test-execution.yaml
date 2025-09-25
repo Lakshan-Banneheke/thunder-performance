@@ -37,11 +37,11 @@ parameters:
   - name: PERFORMANCE_REPO
     displayName: Performance repo name
     type: string
-    default: wso2/performance-is
+    default: Lakshan-Banneheke/thunder-performance # TODO Update after testing
   - name: PERFORMANCE_REPO_BRANCH
     displayName: Performance repo branch name
     type: string
-    default: thunder
+    default: perf-runner-scripts # TODO Update after testing
   - name: THUNDER_HELM_REPO
     type: string
     displayName: "Thunder Helm Repository"

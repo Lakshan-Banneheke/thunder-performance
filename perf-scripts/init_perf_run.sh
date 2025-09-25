@@ -49,7 +49,7 @@ echo "=========================================================="
   
 # Define and execute start-performance command.
 echo "Bastion IP init: $BASTION_NODE_IP"
-cmd="./start-performance.sh -b $BASTION_NODE_IP -n $DATABASE_HOST_NAME -d $THUNDER_HOST_NAME -t $MODE -- -d 5 -w 2 -q $POPULATE_TEST_DATA -r $CONCURRENCY"
+cmd="./start-performance.sh -b $BASTION_NODE_IP -n $DATABASE_HOST_NAME -d $THUNDER_HOST_NAME -t $MODE -- -d 5 -w 2 -q $POPULATE_TEST_DATA -c $CONCURRENCY"
 # TODO change -d above to 15 mins
 
 $cmd
