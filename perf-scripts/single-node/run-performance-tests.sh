@@ -26,14 +26,14 @@ lb_ssh_host_alias=loadbalancer
 rds_ssh_host_alias=rds
 
 # Execute common script
-. $script_dir/perf-test-is.sh "$@"
+. $script_dir/perf-test-thunder.sh "$@"
 
 # Source test scenarios
 source $script_dir/test_scenarios.sh
 
 function before_execute_test_scenario() {
 
-    ssh $wso2thunder_host_alias "./restart-is.sh -m $heap"
+    ssh $wso2thunder_host_alias "./restart-thunder.sh -m $heap"
 
     # Skipping Cleaning DBs as that is not required in Thunder
     # echo "Cleaning databases..."

@@ -95,10 +95,10 @@ echo "============================================"
 cd /home/ubuntu || exit 0
 
 if [[ -z $no_of_nodes ]]; then
-    echo "Please provide the number of IS nodes in the deployment."
+    echo "Please provide the number of Thunder nodes in the deployment."
     exit 1
 elif [[ $no_of_nodes -eq 1 ]]; then
-    workspace/setup/setup-jmeter-client-is.sh -g -k /home/ubuntu/private_key.pem \
+    workspace/setup/setup-jmeter-client-thunder.sh -g -k /home/ubuntu/private_key.pem \
                 -i /home/ubuntu \
                 -c /home/ubuntu \
                 -f /home/ubuntu/apache-jmeter-*.tgz \

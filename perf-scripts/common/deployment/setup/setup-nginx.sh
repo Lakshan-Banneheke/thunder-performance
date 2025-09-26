@@ -52,15 +52,15 @@ done
 echo ""
 echo "Coping files..."
 echo "============================================"
-sudo cp resources/server.* /etc/nginx/ssl/is/
+sudo cp resources/server.* /etc/nginx/ssl/thunder/
 sudo cp resources/is.conf /etc/nginx/conf.d/
 
 echo ""
-echo "Adding IS IPs to conf file..."
+echo "Adding Thunder IPs to conf file..."
 echo "============================================"
 
 if [[ -z $no_of_nodes ]]; then
-    echo "Please provide the number of IS nodes in the deployment."
+    echo "Please provide the number of Thunder nodes in the deployment."
     exit 1
 fi
 

@@ -29,7 +29,7 @@
 
     <artifactId>is-performance-singlenode</artifactId>
 
-    <name>IS Performance Single Node</name>
+    <name>Thunder Performance Single Node</name>
     <packaging>pom</packaging>
 
     <dependencies>

@@ -381,7 +381,7 @@ Resources:
         - DeleteOnTermination: 'true'
           Description: Primary network interface
           DeviceIndex: 0
-          # Uncomment public subnet to assign a public IP to the IS instance.
+          # Uncomment public subnet to assign a public IP to the Thunder instance.
           # SubnetId: !Ref WSO2ThunderPublicSubnet1suffix
           SubnetId: !Ref WSO2ThunderPrivateSubnet1suffix
           GroupSet:
@@ -394,12 +394,12 @@ Resources:
             - 'export PATH=~/.local/bin:$PATH'
             - apt-get update
             - DEBIAN_FRONTEND=noninteractive apt-get install -yq nginx
-            - mkdir -p /etc/nginx/ssl/is
+            - mkdir -p /etc/nginx/ssl/thunder
 
   WSO2ThunderNodeLaunchConfigurationsuffix:
     Type: 'AWS::AutoScaling::LaunchConfiguration'
     Properties:
-      # Uncomment below to assign a public IP to the IS instance.
+      # Uncomment below to assign a public IP to the Thunder instance.
       # AssociatePublicIpAddress: true
       ImageId: !FindInMap
         - WSO2ThunderAMIRegionMapsuffix
@@ -446,7 +446,7 @@ Resources:
       MinSize: 1
       MaxSize: 1
       VPCZoneIdentifier:
-        # Use public subnet to assign a public IP to the IS instance.
+        # Use public subnet to assign a public IP to the Thunder instance.
         # - !Ref WSO2ThunderPublicSubnet1
         - !Ref WSO2ThunderPrivateSubnet1suffix
       Tags:

@@ -16,7 +16,7 @@
 # under the License.
 #
 # ----------------------------------------------------------------------------
-# Setup IS pack.
+# Setup Thunder pack.
 # ----------------------------------------------------------------------------
 
 function usage() {
@@ -24,7 +24,7 @@ function usage() {
     echo "Usage: "
     echo "$0 -a <HOST_ALIAS> -i <IS_NODE_IP> -w <OTHER_IS_NODE_IP> -r <RDS_IP> "
     echo ""
-    echo "-a: Host alias of the IS node to be setup."
+    echo "-a: Host alias of the Thunder node to be setup."
     echo "-i: The IP of thunder node 1."
     echo "-r: The IP address of RDS."
     echo "-h: Display this help and exit."
@@ -79,28 +79,28 @@ echo ""
 echo "Copying Is server setup files..."
 echo "-------------------------------------------"
 
-sudo -u ubuntu scp setup/update-is-conf.sh "$is_host_alias":/home/ubuntu/
+sudo -u ubuntu scp setup/update-thunder-conf.sh "$is_host_alias":/home/ubuntu/
 sudo -u ubuntu scp -r setup/resources/ "$is_host_alias":/home/ubuntu/
 sudo -u ubuntu scp thunder.zip "$is_host_alias":/home/ubuntu/
 
 sudo -u ubuntu ssh "$is_host_alias" mkdir sar setup
 sudo -u ubuntu scp workspace/setup/setup-common.sh "$is_host_alias":/home/ubuntu/setup/
 sudo -u ubuntu scp workspace/sar/install-sar.sh "$is_host_alias":/home/ubuntu/sar/
-sudo -u ubuntu scp workspace/is/restart-is.sh "$is_host_alias":/home/ubuntu/
+sudo -u ubuntu scp workspace/thunder/restart-thunder.sh "$is_host_alias":/home/ubuntu/
 sudo -u ubuntu ssh "$is_host_alias" sudo ./setup/setup-common.sh -p zip -p jq -p bc
 
 setup_is_node_command=""
 
 if [[ $no_of_nodes -eq 1 ]]; then
     setup_is_node_command="ssh -i ~/private_key.pem -o "StrictHostKeyChecking=no" -t ubuntu@$wso2_thunder_1_ip \
-      ./update-is-conf.sh -n $no_of_nodes -r $db_instance_ip -m $db_type"
+      ./update-thunder-conf.sh -n $no_of_nodes -r $db_instance_ip -m $db_type"
 else
     echo "Invalid value for no_of_nodes. Please provide a valid number."
     exit 1
 fi
 
 echo ""
-echo "Running update-is-conf script: $setup_is_node_command"
+echo "Running update-thunder-conf script: $setup_is_node_command"
 echo "============================================"
 # Handle any error and let the script continue.
 $setup_is_node_command || echo "Remote ssh command to setup is node failed."

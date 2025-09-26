@@ -66,12 +66,12 @@ function usage() {
     echo "-u: The database username. Default: $default_db_username."
     echo "-p: The database password. Default: $default_db_password."
     echo "-e: The database instance type. Default: $default_db_instance_type."
-    echo "-i: The instance type used for IS nodes. Default: $default_is_instance_type."
+    echo "-i: The instance type used for Thunder nodes. Default: $default_is_instance_type."
     echo "-b: The instance type used for the bastion node. Default: $default_bastion_instance_type."
     echo "-w: The minimum time to wait in minutes before polling for cloudformation stack's CREATE_COMPLETE status."
     echo "    Default: $default_minimum_stack_creation_wait_time minutes."
     echo "-v: The required testing mode [FULL/QUICK]"
-    echo "-g: Number of IS nodes."
+    echo "-g: Number of Thunder nodes."
     echo "-m: Database type. Default: $db_type."
     echo "-h: Display this help and exit."
     echo ""
@@ -232,7 +232,7 @@ echo ""
 echo "Results will be downloaded to $results_dir"
 
 echo ""
-echo "Extracting IS Performance Distribution to $results_dir"
+echo "Extracting Thunder Performance Distribution to $results_dir"
 if [[ $no_of_nodes -eq 1 ]]; then
     tar -xf target/is-performance-singlenode-*.tar.gz -C "$results_dir"
 fi
@@ -384,7 +384,7 @@ execute_db_command "$rds_host" "/home/ubuntu/workspace/setup/resources/$db_type/
 echo ""
 echo "Running Thunder node 1 setup script..."
 echo "============================================"
-ssh_bastion_cmd "./setup/setup-is.sh -n $no_of_nodes -m $db_type -a thunder1 -i $wso2_thunder_1_ip -r $rds_host"
+ssh_bastion_cmd "./setup/setup-thunder.sh -n $no_of_nodes -m $db_type -a thunder1 -i $wso2_thunder_1_ip -r $rds_host"
 
 echo ""
 echo "Running performance tests..."
