@@ -366,7 +366,7 @@ function run_test_data_scripts() {
     echo "Running test data setup scripts"
     echo "=========================================================================================="
     declare -a scripts=("TestData_Thunder_Add_Applications.jmx")
-    setup_dir="/home/azureuser/workspace/jmeter/setup" #TODO parameterize user
+    setup_dir="./setup"
 
     for script in "${scripts[@]}"; do
         script_file="$setup_dir/$script"

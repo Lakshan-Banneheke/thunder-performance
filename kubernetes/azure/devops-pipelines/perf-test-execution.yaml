@@ -91,7 +91,7 @@ variables:
 
 resources:
   repositories:
-    - repository: performance-is
+    - repository: thunder-performance
       type: github
       endpoint: thunder-performance
       name: $(PERFORMANCE_REPO)
@@ -178,7 +178,7 @@ jobs:
     steps:
       - checkout: self
 
-      - checkout: performance-is
+      - checkout: thunder-performance
         persistCredentials: true
 
       - task: UsePythonVersion@0
@@ -208,7 +208,7 @@ jobs:
           scriptType: bash
           useGlobalConfig: true
           scriptLocation: scriptPath
-          scriptPath: '$(Agent.BuildDirectory)/s/performance-is/azure-pipeline/init_perf_run.sh'
+          scriptPath: '$(Agent.BuildDirectory)/s/thunder-performance/perf-scripts/init_perf_run.sh'
           addSpnToEnvironment: true
         env:
           BUILD_NUM: $(Build.BuildNumber)
@@ -218,7 +218,7 @@ jobs:
           GITHUB_USERNAME: $(gitUsername)
           BUILD_TYPE: $(Build.Reason)
           BUILD_PATH: $(Build.ArtifactStagingDirectory)
-          DATABASE_HOST_NAME: 'postgresql-thunder-perf-eastus2-001.postgres.database.azure.com' #TODO check if we can remove
+          DATABASE_HOST_NAME: 'postgresql-thunder-perf-eastus2-001.postgres.database.azure.com'
           THUNDER_HOST_NAME: 'thunder.local'
           POPULATE_TEST_DATA: ${{parameters.POPULATE_TEST_DATA}}
           RUN_MODE: ${{parameters.RUN_MODE}}
