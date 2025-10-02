@@ -22,7 +22,7 @@ The VM performance testing workflow provisions AWS infrastructure, deploys Thund
 | THUNDER_PACK_URL | URL to download Thunder distribution pack | (required) | Any valid URL |
 | DEPLOYMENT | Deployment type | `single-node` | `single-node` |
 | CPU_CORES | Number of CPU cores for the instance | `4` | `2`, `4`, `8` |
-| ADDITIONAL_PARAMS_TO_RUN_PERFORMANCE_SCRIPT | Additional parameters passed to performance script | `-d 15 -w 5 -x false -y JWT` | Any valid parameters |
+| ADDITIONAL_PARAMS_TO_RUN_PERFORMANCE_SCRIPT | Additional parameters passed to the start-performance.sh script (e.g., for run-performance-tests.sh) | `-d 15 -w 5 -x false -y JWT` | Any valid parameters for the performance test script |
 | PERFORMANCE_REPO | Repository containing performance test scripts | `https://github.com/asgardeo/thunder-performance` | Any valid Git repository URL |
 | BRANCH | Branch to checkout from performance repository | `main` | Any valid branch name |
 | MODE | Testing mode | `PUBLISH` | `PUBLISH`, `FULL` |
