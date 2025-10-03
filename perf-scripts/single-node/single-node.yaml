@@ -343,8 +343,8 @@ Resources:
             DEBIAN_FRONTEND=noninteractive apt-get install -y unzip
             echo "export PATH=$PATH" >>/etc/environment
             # Download and install JDK 17
-            curl -o jdk-setup.tar.gz https://performance-thunder.s3.us-west-1.amazonaws.com/resources/OpenJDK17U-jdk_x64_linux_hotspot_17.0.16_8.tar.gz
-            sudo mkdir -p /usr/lib/jvm
+            curl -o jdk-setup.tar.gz https://performance-thunder.s3.us-west-1.amazonaws.com/resources/jdk-11.0.15.1_linux-x64_bin.tar.gz
+            sudo mkdir /usr/lib/jvm
             sudo tar -xvf jdk-setup.tar.gz -C /usr/lib/jvm
             sudo mv /usr/lib/jvm/jdk* /usr/lib/jvm/jdk
             sudo update-alternatives --install "/usr/bin/java" "java" "/usr/lib/jvm/jdk/bin/java" 1

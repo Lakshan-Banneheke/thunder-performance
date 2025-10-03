@@ -32,6 +32,9 @@ echo "    DEPLOYMENT: $DEPLOYMENT"
 echo "    CPU_CORES: $CPU_CORES"
 echo "    PERFORMANCE_REPO: $PERFORMANCE_REPO"
 echo "    BRANCH: $BRANCH"
+echo "    DB_TYPE: $DB_TYPE"
+echo "    BUILD_CAUSE: $BUILD_CAUSE"
+echo "    Build Triggered By $BUILD_USER_EMAIL"
 echo "=========================================================="
 cd $WORKSPACE
 rm -rf workspace
@@ -40,8 +43,6 @@ rm -rf resources
 mkdir resources
 cd workspace
 
-SHEET_NAME=$(date +%Y-%m-%d)-Performance
-VERSION="latest"
 echo ""
 echo "Downloading Thunder Pack..."
 echo "=========================================================="
@@ -55,8 +56,6 @@ git clone $PERFORMANCE_REPO
 cd thunder-performance
 git checkout $BRANCH
 cd perf-scripts
-
-echo "Build Triggered By $BUILD_USER_EMAIL"
 
 aws s3 cp s3://performance-thunder/keys/thunder-perf-test.pem thunder-perf-test.pem
 chmod 400 thunder-perf-test.pem
@@ -81,8 +80,6 @@ else
 fi
 
 cd $DEPLOYMENT
-
-echo "Build started by build cause: $BUILD_CAUSE"
 
 echo ""
 echo "Building project..."
