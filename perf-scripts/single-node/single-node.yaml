@@ -342,7 +342,6 @@ Resources:
             DEBIAN_FRONTEND=noninteractive apt install -y postgresql-client
             DEBIAN_FRONTEND=noninteractive apt-get install -y unzip
             echo "export PATH=$PATH" >>/etc/environment
-            # Download and install JDK 17
             curl -o jdk-setup.tar.gz https://performance-thunder.s3.us-west-1.amazonaws.com/resources/jdk-11.0.15.1_linux-x64_bin.tar.gz
             sudo mkdir /usr/lib/jvm
             sudo tar -xvf jdk-setup.tar.gz -C /usr/lib/jvm
