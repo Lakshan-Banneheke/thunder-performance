@@ -40,17 +40,12 @@ rm -rf resources
 mkdir resources
 cd workspace
 
-export AWS_ACCESS_KEY_ID="$AWS_ACCESS_KEY_ID"
-export AWS_SECRET_ACCESS_KEY="$AWS_SECRET_ACCESS_KEY"
-export AWS_DEFAULT_REGION=us-east-1
-
 SHEET_NAME=$(date +%Y-%m-%d)-Performance
 VERSION="latest"
 echo ""
 echo "Downloading Thunder Pack..."
 echo "=========================================================="
 wget -q -O "$WORKSPACE"/thunder.zip "$THUNDER_PACK_URL"
-
 
 sudo rm -rf thunder-performance
 echo ""
@@ -90,7 +85,6 @@ else
 fi
 
 cd single-node
-
 
 echo "Build started by build cause: $BUILD_CAUSE"
 
