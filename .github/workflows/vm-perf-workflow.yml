@@ -55,7 +55,7 @@ on:
       CONCURRENCY:
         description: 'Concurrency pattern'
         required: false
-        default: '50-500'
+        default: '50-50'
         type: choice
         options:
           - '50-500'
