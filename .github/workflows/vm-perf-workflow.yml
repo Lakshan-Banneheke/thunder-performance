@@ -24,14 +24,6 @@ on:
           - '2'
           - '4'
           - '8'
-      AWS_REGION:
-        description: 'AWS region'
-        required: false
-        default: 'us-east-1'
-        type: choice
-        options:
-          - us-east-1
-          - us-west-1
       ADDITIONAL_PARAMS_TO_RUN_PERFORMANCE_SCRIPT:
         description: 'Additional parameters for performance script'
         required: false
@@ -94,7 +86,7 @@ jobs:
         with:
           aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
           aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-          aws-region: ${{ inputs.AWS_REGION }}
+          aws-region: us-west-1
 
       - name: Setup Java
         uses: actions/setup-java@v4
