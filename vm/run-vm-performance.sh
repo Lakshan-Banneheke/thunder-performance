@@ -84,7 +84,7 @@ else
 	exit 1
 fi
 
-cd single-node
+cd $DEPLOYMENT
 
 echo "Build started by build cause: $BUILD_CAUSE"
 
