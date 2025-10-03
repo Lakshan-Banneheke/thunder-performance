@@ -6,6 +6,7 @@ on:
       THUNDER_PACK_URL:
         description: 'URL to download Thunder pack'
         required: true
+        default: 'https://github.com/asgardeo/thunder/releases/download/v0.7.0/thunder-v0.7.0-linux-x64.zip'
         type: string
       DEPLOYMENT:
         description: 'Deployment type'
@@ -49,7 +50,8 @@ on:
       USE_DELAYS:
         description: 'Enable delays in testing'
         required: false
-        type: string
+        default: true
+        type: boolean
       CONCURRENCY:
         description: 'Concurrency pattern'
         required: false
@@ -122,6 +124,7 @@ jobs:
           BUILD_NUMBER: ${{ github.run_number }}
           AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
           AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          AWS_SESSION_TOKEN: ${{ secrets.AWS_SESSION_TOKEN }}
           JWT_TOKEN_CLIENT_SECRET: ${{ secrets.JWT_TOKEN_CLIENT_SECRET }}
           JWT_TOKEN_USER_PASSWORD: ${{ secrets.JWT_TOKEN_USER_PASSWORD }}
         run: |
