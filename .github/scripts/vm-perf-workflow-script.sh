@@ -59,17 +59,13 @@ cd perf-scripts
 echo "Build Triggered By $BUILD_USER_EMAIL"
 
 aws s3 cp s3://performance-thunder/keys/thunder-perf-test.pem thunder-perf-test.pem
-
 chmod 400 thunder-perf-test.pem
-
-APACHE_JMETER="https://performance-thunder.s3.us-west-1.amazonaws.com/resources/apache-jmeter-5.6.3.tgz"
-
-wget -q -O apache-jmeter-5.6.3.tgz $APACHE_JMETER
-
-mv apache-jmeter-5.6.3.tgz $RESOURCES_DIR
 mv thunder-perf-test.pem $RESOURCES_DIR
 
-# Temp script to resolve cpu cores
+aws s3 cp s3://performance-thunder/resources/apache-jmeter-5.6.3.tgz apache-jmeter-5.6.3.tgz
+mv apache-jmeter-5.6.3.tgz $RESOURCES_DIR
+
+# Script to resolve cpu cores
 instance_type=""
 if [ "$CPU_CORES" = "2" ]; then
 	instance_type="c6i.large"
@@ -99,6 +95,8 @@ $CMD_MVN
 echo ""
 echo "Starting test..."
 echo "=========================================================="
+
+echo "CPU Instance type: $instance_type"
 
 cmd="./start-performance.sh -k $RESOURCES_DIR/thunder-perf-test.pem \
 -c is-perf-cert -j $RESOURCES_DIR/apache-jmeter-5.6.3.tgz -n $WORKSPACE/thunder.zip -q $BUILD_USER_EMAIL -i $instance_type -m $DB_TYPE -r $CONCURRENCY -v $MODE -f $DEPLOYMENT -z $USE_DELAYS "
