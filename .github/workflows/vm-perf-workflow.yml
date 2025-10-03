@@ -111,8 +111,8 @@ jobs:
           BUILD_CAUSE: ${{ github.event_name }}
           BUILD_NUMBER: ${{ github.run_number }}
         run: |
-          chmod +x vm/run-vm-performance.sh
-          bash vm/run-vm-performance.sh
+          chmod +x .github/scripts/vm-perf-workflow-script.sh
+          bash .github/scripts/vm-perf-workflow-script.sh
 
       - name: Upload test results
         if: always()
