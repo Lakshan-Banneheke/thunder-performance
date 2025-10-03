@@ -58,16 +58,16 @@ cd perf-scripts
 
 echo "Build Triggered By $BUILD_USER_EMAIL"
 
-aws s3 cp s3://performance-is-resources/Key/is-perf-test.pem is-perf-test.pem
+aws s3 cp s3://performance-thunder/keys/thunder-perf-test.pem thunder-perf-test.pem
 
-chmod 400 is-perf-test.pem
+chmod 400 thunder-perf-test.pem
 
-APACHE_JMETER="https://performance-is-packs.s3.amazonaws.com/productis/apache-jmeter-5.3.tgz"
+APACHE_JMETER="https://performance-thunder.s3.us-west-1.amazonaws.com/resources/apache-jmeter-5.6.3.tgz"
 
-wget -q -O apache-jmeter-5.3.tgz $APACHE_JMETER
+wget -q -O apache-jmeter-5.6.3.tgz $APACHE_JMETER
 
-mv apache-jmeter-5.3.tgz $RESOURCES_DIR
-mv is-perf-test.pem $RESOURCES_DIR
+mv apache-jmeter-5.6.3.tgz $RESOURCES_DIR
+mv thunder-perf-test.pem $RESOURCES_DIR
 
 # Temp script to resolve cpu cores
 instance_type=""
@@ -100,8 +100,8 @@ echo ""
 echo "Starting test..."
 echo "=========================================================="
 
-cmd="./start-performance.sh -k $RESOURCES_DIR/is-perf-test.pem \
--c is-perf-cert -j $RESOURCES_DIR/apache-jmeter-5.3.tgz -n $WORKSPACE/thunder.zip -q $BUILD_USER_EMAIL -i $instance_type -m $DB_TYPE -r $CONCURRENCY -v $MODE -f $DEPLOYMENT -z $USE_DELAYS "
+cmd="./start-performance.sh -k $RESOURCES_DIR/thunder-perf-test.pem \
+-c is-perf-cert -j $RESOURCES_DIR/apache-jmeter-5.6.3.tgz -n $WORKSPACE/thunder.zip -q $BUILD_USER_EMAIL -i $instance_type -m $DB_TYPE -r $CONCURRENCY -v $MODE -f $DEPLOYMENT -z $USE_DELAYS "
 
 if [[ ! -z $ADDITIONAL_PARAMS_TO_RUN_PERFORMANCE_SCRIPT ]]; then
 	cmd+=" $ADDITIONAL_PARAMS_TO_RUN_PERFORMANCE_SCRIPT"
@@ -113,4 +113,4 @@ eval $cmd
 
 cp -r results-* "$WORKSPACE_DIR"
 
-aws s3 cp --recursive results-* s3://performance-is-resources/Thunder/Results/"$BUILD_NUMBER"
+aws s3 cp --recursive results-* s3://performance-thunder/results/"GitHub-$BUILD_NUMBER"
