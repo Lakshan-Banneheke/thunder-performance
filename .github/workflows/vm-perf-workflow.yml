@@ -42,11 +42,11 @@ on:
       MODE:
         description: 'Testing mode'
         required: false
-        default: 'PUBLISH'
+        default: 'FULL'
         type: choice
         options:
-          - PUBLISH
           - FULL
+          - QUICK
       USE_DELAYS:
         description: 'Enable delays in testing'
         required: false
@@ -125,8 +125,6 @@ jobs:
           AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
           AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           AWS_SESSION_TOKEN: ${{ secrets.AWS_SESSION_TOKEN }}
-          JWT_TOKEN_CLIENT_SECRET: ${{ secrets.JWT_TOKEN_CLIENT_SECRET }}
-          JWT_TOKEN_USER_PASSWORD: ${{ secrets.JWT_TOKEN_USER_PASSWORD }}
         run: |
           chmod +x vm/run-vm-performance.sh
           bash vm/run-vm-performance.sh
