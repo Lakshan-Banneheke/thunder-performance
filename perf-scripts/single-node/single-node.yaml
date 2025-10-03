@@ -397,44 +397,50 @@ Resources:
             - DEBIAN_FRONTEND=noninteractive apt-get install -yq nginx
             - mkdir -p /etc/nginx/ssl/thunder
 
-  WSO2ThunderNodeLaunchConfigurationsuffix:
-    Type: 'AWS::AutoScaling::LaunchConfiguration'
+  WSO2ThunderNodeLaunchTemplatesuffix:
+    Type: 'AWS::EC2::LaunchTemplate'
     Properties:
-      # Uncomment below to assign a public IP to the Thunder instance.
-      # AssociatePublicIpAddress: true
-      ImageId: !FindInMap
-        - WSO2ThunderAMIRegionMapsuffix
-        - !Ref 'AWS::Region'
-        - AMI
-      InstanceType: !Ref WSO2InstanceType
-      BlockDeviceMappings:
-        - DeviceName: /dev/sda1
-          Ebs:
-            VolumeSize: '20'
-            VolumeType: gp2
-            DeleteOnTermination: 'true'
-      KeyName: !Ref KeyPairName
-      SecurityGroups:
-        - !Ref WSO2ThunderSecurityGroupsuffix
-      UserData: !Base64
-        'Fn::Sub':
-          - |+
-            #!/bin/bash
-            export PATH=~/.local/bin:$PATH
-            curl https://packages.microsoft.com/keys/microsoft.asc | sudo apt-key add -
-            curl https://packages.microsoft.com/config/ubuntu/18.04/prod.list | sudo tee /etc/apt/sources.list.d/msprod.list
-            apt-get update
-            DEBIAN_FRONTEND=noninteractive apt install -y postgresql-client
-            DEBIAN_FRONTEND=noninteractive apt-get install -y unzip
-            echo "export PATH=$PATH" >>/etc/environment
-            curl -o go-setup.tar.gz https://performance-thunder.s3.us-west-1.amazonaws.com/resources/go1.25.0.linux-amd64.tar.gz
-            sudo tar -C /usr/local -xzf go-setup.tar.gz
-            sudo su
-            echo "export PATH=$PATH:/usr/local/go/bin" >>/etc/environment
-            echo "export PGPASSWORD=${DBPassword}" >>/etc/environment
-            source /etc/environment
-            exit
-          - DBPassword: !Ref DBPassword
+      LaunchTemplateName: !Sub 'WSO2ThunderNodeLaunchTemplate-${AWS::StackName}'
+      LaunchTemplateData:
+        # Uncomment below to assign a public IP to the Thunder instance.
+        # NetworkInterfaces:
+        #  - AssociatePublicIpAddress: true
+        #    DeviceIndex: 0
+        #    Groups:
+        #      - !Ref WSO2ThunderSecurityGroupsuffix
+        ImageId: !FindInMap
+          - WSO2ThunderAMIRegionMapsuffix
+          - !Ref 'AWS::Region'
+          - AMI
+        InstanceType: !Ref WSO2InstanceType
+        BlockDeviceMappings:
+          - DeviceName: /dev/sda1
+            Ebs:
+              VolumeSize: '20'
+              VolumeType: gp2
+              DeleteOnTermination: 'true'
+        KeyName: !Ref KeyPairName
+        SecurityGroupIds:
+          - !Ref WSO2ThunderSecurityGroupsuffix
+        UserData: !Base64
+          'Fn::Sub':
+            - |+
+              #!/bin/bash
+              export PATH=~/.local/bin:$PATH
+              curl https://packages.microsoft.com/keys/microsoft.asc | sudo apt-key add -
+              curl https://packages.microsoft.com/config/ubuntu/18.04/prod.list | sudo tee /etc/apt/sources.list.d/msprod.list
+              apt-get update
+              DEBIAN_FRONTEND=noninteractive apt install -y postgresql-client
+              DEBIAN_FRONTEND=noninteractive apt-get install -y unzip
+              echo "export PATH=$PATH" >>/etc/environment
+              curl -o go-setup.tar.gz https://performance-thunder.s3.us-west-1.amazonaws.com/resources/go1.25.0.linux-amd64.tar.gz
+              sudo tar -C /usr/local -xzf go-setup.tar.gz
+              sudo su
+              echo "export PATH=$PATH:/usr/local/go/bin" >>/etc/environment
+              echo "export PGPASSWORD=${DBPassword}" >>/etc/environment
+              source /etc/environment
+              exit
+            - DBPassword: !Ref DBPassword
     DependsOn:
       - WSO2ThunderSecurityGroupsuffix
       - WSO2ThunderVPCInternetGatewayAttachmentsuffix
@@ -442,7 +448,9 @@ Resources:
   WSO2ThunderNode1AutoScalingGroupsuffix:
     Type: 'AWS::AutoScaling::AutoScalingGroup'
     Properties:
-      LaunchConfigurationName: !Ref WSO2ThunderNodeLaunchConfigurationsuffix
+      LaunchTemplate:
+        LaunchTemplateId: !Ref WSO2ThunderNodeLaunchTemplatesuffix
+        Version: !GetAtt WSO2ThunderNodeLaunchTemplatesuffix.LatestVersionNumber
       DesiredCapacity: 1
       MinSize: 1
       MaxSize: 1
@@ -461,7 +469,7 @@ Resources:
           Value: !Ref UserTag
           PropagateAtLaunch: 'true'
     DependsOn:
-      - WSO2ThunderNodeLaunchConfigurationsuffix
+      - WSO2ThunderNodeLaunchTemplatesuffix
 
 Outputs:
   InstanceID:
