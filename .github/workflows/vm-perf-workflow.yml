@@ -95,16 +95,6 @@ jobs:
           distribution: 'temurin'
           java-version: '17'
 
-      - name: Setup Maven
-        uses: stCarolas/setup-maven@v5
-        with:
-          maven-version: 3.9.5
-
-      - name: Set up workspace
-        run: |
-          echo "Setting up workspace directory"
-          mkdir -p ${{ github.workspace }}/workspace
-          mkdir -p ${{ github.workspace }}/resources
       - name: Execute VM Performance Test
         env:
           WORKSPACE: ${{ github.workspace }}
@@ -128,6 +118,7 @@ jobs:
         run: |
           chmod +x vm/run-vm-performance.sh
           bash vm/run-vm-performance.sh
+
       - name: Upload test results
         if: always()
         uses: actions/upload-artifact@v4
