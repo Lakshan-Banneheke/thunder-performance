@@ -121,17 +121,16 @@ timestamp=$(date +%Y-%m-%d--%H-%M-%S)
 summary_filename="summary-$timestamp"
 detailed_summary_filename="summary_detailed-$timestamp"
 
-BM_DIR="../benchmarks/"
-if [ ! -d "$BM_DIR" ]; then
-    mkdir $BM_DIR
-fi
+echo "Before BM_DIR"
+pwd
 
-mkdir ../benchmarks/$timestamp
+mkdir -p ../benchmarks/$timestamp
 #cp results-*/summary.csv ../benchmarks/$timestamp/
 #cut -d',' -f -9 results-*/summary-original.csv > ../benchmarks/$timestamp/$detailed_summary_filename.csv
-#cd ..
+cd ..
 #mv benchmarks/$timestamp/summary.csv benchmarks/$timestamp/$summary_filename.csv
-
+echo "Before README"
+pwd
 #Create a readme file for benchmarks
 cat <<EOF >> benchmarks/$timestamp/readme.md
 Build Number: $BUILD_NUMBER
@@ -158,4 +157,4 @@ git add benchmarks/$timestamp/
 git commit -m "Add performance benchmarks from test at $timestamp"
 git pull origin $BRANCH
 git push -u origin $BRANCH
-echo "Push completed"
+
