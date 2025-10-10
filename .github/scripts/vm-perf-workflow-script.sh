@@ -29,6 +29,7 @@ echo "Starting performance test with params:"
 echo "    THUNDER_PACK_URL: $THUNDER_PACK_URL"
 echo "    DEPLOYMENT: $DEPLOYMENT"
 echo "    CPU_CORES: $CPU_CORES"
+echo "    CONCURRENCY: $CONCURRENCY"
 echo "    PERFORMANCE_REPO: $PERFORMANCE_REPO"
 echo "    BRANCH: $BRANCH"
 echo "    DB_TYPE: $DB_TYPE"
@@ -108,3 +109,46 @@ eval $cmd
 cp -r results-* "$WORKSPACE_DIR"
 
 aws s3 cp --recursive results-* s3://performance-thunder/results/"GitHub-$BUILD_NUMBER"
+
+# Copy summary csv to new directory and push to github.
+timestamp=$(date +%Y-%m-%d--%H-%M-%S)
+summary_filename="summary-$timestamp"
+detailed_summary_filename="summary_detailed-$timestamp"
+
+BM_DIR="../benchmarks/"
+if [ ! -d "$BM_DIR" ]; then
+    mkdir $BM_DIR
+fi
+
+mkdir ../benchmarks/$timestamp
+cp results-*/summary.csv ../benchmarks/$timestamp/
+cut -d',' -f -9 results-*/summary-original.csv > ../benchmarks/$timestamp/$detailed_summary_filename.csv
+cd ..
+mv benchmarks/$timestamp/summary.csv benchmarks/$timestamp/$summary_filename.csv
+
+#Create a readme file for benchmarks
+cat <<EOF >> benchmarks/$timestamp/readme.md
+Build Number: $BUILD_NUMBER
+
+Build Date and Time: $timestamp
+
+Thunder Pack URL: $THUNDER_PACK_URL
+
+Deployment Pattern: $DEPLOYMENT
+
+CPU Cores: $CPU_CORES
+
+Database Type: $DB_TYPE
+
+Concurrency: $CONCURRENCY
+
+Performance Repo: $PERFORMANCE_REPO
+
+Performance Repo Branch: $BRANCH
+
+EOF
+
+git add benchmarks/$timestamp/
+git commit -m "Add performance benchmarks from test at $timestamp"
+git pull origin $BRANCH
+git push -u origin $BRANCH

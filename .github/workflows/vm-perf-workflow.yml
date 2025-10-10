@@ -65,13 +65,6 @@ on:
           - '50-50'
           - '50-1000'
           - '50-1500'
-      DB_TYPE:
-        description: 'Database type'
-        required: true
-        default: 'postgres'
-        type: choice
-        options:
-          - postgres
 
 jobs:
   vm-performance-test:
@@ -106,7 +99,7 @@ jobs:
           MODE: ${{ inputs.MODE }}
           USE_DELAYS: ${{ inputs.USE_DELAYS }}
           CONCURRENCY: ${{ inputs.CONCURRENCY }}
-          DB_TYPE: ${{ inputs.DB_TYPE }}
+          DB_TYPE: 'postgres'
           BUILD_USER_EMAIL: ${{ github.actor }}@github.com
           BUILD_CAUSE: ${{ github.event_name }}
           BUILD_NUMBER: ${{ github.run_number }}
