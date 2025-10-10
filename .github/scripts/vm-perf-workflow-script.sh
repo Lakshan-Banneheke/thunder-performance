@@ -52,7 +52,7 @@ sudo rm -rf thunder-performance
 echo ""
 echo "Cloning thunder-performance repo..."
 echo "=========================================================="
-git clone $PERFORMANCE_REPO
+git clone https://x-access-token:${GITHUB_TOKEN}@${PERFORMANCE_REPO#https://}
 cd thunder-performance
 git checkout $BRANCH
 cd perf-scripts
@@ -113,6 +113,9 @@ aws s3 cp --recursive results-* s3://performance-thunder/results/"GitHub-$BUILD_
 echo "Copying summary csv to new directory and pushing to github."
 git config user.name "github-actions[bot]"
 git config user.email "github-actions[bot]@users.noreply.github.com"
+
+# Set up Git authentication using the GitHub token
+git remote set-url origin https://x-access-token:${GITHUB_TOKEN}@${PERFORMANCE_REPO#https://}
 
 timestamp=$(date +%Y-%m-%d--%H-%M-%S)
 summary_filename="summary-$timestamp"

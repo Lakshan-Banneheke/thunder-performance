@@ -76,6 +76,8 @@ jobs:
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Configure AWS credentials
         uses: aws-actions/configure-aws-credentials@v4
@@ -106,6 +108,7 @@ jobs:
           BUILD_USER_EMAIL: ${{ github.actor }}@github.com
           BUILD_CAUSE: ${{ github.event_name }}
           BUILD_NUMBER: ${{ github.run_number }}
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
           chmod +x .github/scripts/vm-perf-workflow-script.sh
           bash .github/scripts/vm-perf-workflow-script.sh
