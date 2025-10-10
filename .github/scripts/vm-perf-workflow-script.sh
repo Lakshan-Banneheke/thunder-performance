@@ -111,6 +111,9 @@ cp -r results-* "$WORKSPACE_DIR"
 aws s3 cp --recursive results-* s3://performance-thunder/results/"GitHub-$BUILD_NUMBER"
 
 echo "Copying summary csv to new directory and pushing to github."
+git config user.name "github-actions[bot]"
+git config user.email "github-actions[bot]@users.noreply.github.com"
+
 timestamp=$(date +%Y-%m-%d--%H-%M-%S)
 summary_filename="summary-$timestamp"
 detailed_summary_filename="summary_detailed-$timestamp"

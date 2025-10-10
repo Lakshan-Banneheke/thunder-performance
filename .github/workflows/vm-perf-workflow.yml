@@ -66,6 +66,9 @@ on:
           - '50-1000'
           - '50-1500'
 
+permissions:
+  contents: write
+
 jobs:
   vm-performance-test:
     runs-on: ubuntu-latest
