@@ -118,15 +118,12 @@ git config user.email "github-actions[bot]@users.noreply.github.com"
 git remote set-url origin https://x-access-token:${GITHUB_TOKEN}@${PERFORMANCE_REPO#https://}
 
 timestamp=$(date +%Y-%m-%d--%H-%M-%S)
-summary_filename="summary-$timestamp"
-detailed_summary_filename="summary_detailed-$timestamp"
-
 benchmark_dir_path="../../benchmarks/$DEPLOYMENT/workflow-build-$BUILD_NUMBER"
 
 mkdir $benchmark_dir_path
 
-cp results-*/summary.csv $benchmark_dir_path/$summary_filename.csv
-cut -d',' -f -9 results-*/summary-original.csv > $benchmark_dir_path/$detailed_summary_filename.csv
+cp results-*/summary.csv $benchmark_dir_path/"summary-$timestamp".csv
+cp results-*/summary-original.csv $benchmark_dir_path/"summary_detailed-$timestamp".csv
 
 #Create a readme file for benchmarks
 cat <<EOF >> $benchmark_dir_path/readme.md
@@ -154,4 +151,3 @@ git add $benchmark_dir_path/
 git commit -m "Add performance benchmarks from test at $timestamp"
 git pull origin $BRANCH
 git push -u origin $BRANCH
-
