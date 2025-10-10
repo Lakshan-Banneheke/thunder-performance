@@ -65,6 +65,11 @@ on:
           - '50-50'
           - '50-1000'
           - '50-1500'
+      PUSH_BENCHMARKS_TO_GITHUB:
+        description: 'Push benchmark results to GitHub'
+        required: false
+        default: true
+        type: boolean
 
 permissions:
   contents: write
@@ -109,6 +114,7 @@ jobs:
           BUILD_CAUSE: ${{ github.event_name }}
           BUILD_NUMBER: ${{ github.run_number }}
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          PUSH_BENCHMARKS_TO_GITHUB: ${{ inputs.PUSH_BENCHMARKS_TO_GITHUB }}
         run: |
           chmod +x .github/scripts/vm-perf-workflow-script.sh
           bash .github/scripts/vm-perf-workflow-script.sh

@@ -35,6 +35,7 @@ echo "    BRANCH: $BRANCH"
 echo "    DB_TYPE: $DB_TYPE"
 echo "    BUILD_CAUSE: $BUILD_CAUSE"
 echo "    Build Triggered By $BUILD_USER_EMAIL"
+echo "    PUSH_BENCHMARKS_TO_GITHUB: $PUSH_BENCHMARKS_TO_GITHUB"
 echo "=========================================================="
 cd $WORKSPACE
 rm -rf workspace
@@ -110,23 +111,26 @@ cp -r results-* "$WORKSPACE_DIR"
 
 aws s3 cp --recursive results-* s3://performance-thunder/results/"GitHub-$BUILD_NUMBER"
 
-echo "Copying summary csv to new directory and pushing to github."
-git config user.name "github-actions[bot]"
-git config user.email "github-actions[bot]@users.noreply.github.com"
+# Function to push benchmark results to GitHub
+push_benchmarks_to_github() {
+    echo "Copying summary csv to new directory and pushing to github."
+    git config user.name "github-actions[bot]"
+    git config user.email "github-actions[bot]@users.noreply.github.com"
+    git config pull.rebase true
 
-# Set up Git authentication using the GitHub token
-git remote set-url origin https://x-access-token:${GITHUB_TOKEN}@${PERFORMANCE_REPO#https://}
+    # Set up Git authentication using the GitHub token
+    git remote set-url origin https://x-access-token:${GITHUB_TOKEN}@${PERFORMANCE_REPO#https://}
 
-timestamp=$(date +%Y-%m-%d--%H-%M-%S)
-benchmark_dir_path="../../benchmarks/$DEPLOYMENT/workflow-build-$BUILD_NUMBER"
+    timestamp=$(date +%Y-%m-%d--%H-%M-%S)
+    benchmark_dir_path="../../benchmarks/$DEPLOYMENT/workflow-build-$BUILD_NUMBER"
 
-mkdir $benchmark_dir_path
+    mkdir $benchmark_dir_path
 
-cp results-*/summary.csv $benchmark_dir_path/"summary-$timestamp".csv
-cp results-*/summary-original.csv $benchmark_dir_path/"summary_detailed-$timestamp".csv
+    cp results-*/summary.csv $benchmark_dir_path/"summary-$timestamp".csv
+    cp results-*/summary-original.csv $benchmark_dir_path/"summary_detailed-$timestamp".csv
 
-#Create a readme file for benchmarks
-cat <<EOF >> $benchmark_dir_path/readme.md
+    #Create a readme file for benchmarks
+    cat <<EOF >> $benchmark_dir_path/readme.md
 Build Number: $BUILD_NUMBER
 
 Build Date and Time: $timestamp
@@ -147,7 +151,16 @@ Performance Repo Branch: $BRANCH
 
 EOF
 
-git add $benchmark_dir_path/
-git commit -m "Add performance benchmarks from test at $timestamp"
-git pull origin $BRANCH
-git push -u origin $BRANCH
+    git add $benchmark_dir_path/
+    git commit -m "Add performance benchmarks from test at $timestamp"
+    git pull origin $BRANCH
+    git push -u origin $BRANCH
+}
+
+# Conditionally execute the function based on the PUSH_BENCHMARKS_TO_GITHUB environment variable
+if [ "$PUSH_BENCHMARKS_TO_GITHUB" = "true" ]; then
+    echo "Pushing benchmark results to GitHub as requested..."
+    push_benchmarks_to_github
+else
+    echo "Skipping push of benchmark results to GitHub as per configuration."
+fi
