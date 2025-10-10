@@ -43,10 +43,10 @@ rm -rf resources
 mkdir resources
 cd workspace
 
-echo ""
-echo "Downloading Thunder Pack..."
-echo "=========================================================="
-wget -q -O "$WORKSPACE"/thunder.zip "$THUNDER_PACK_URL"
+#echo ""
+#echo "Downloading Thunder Pack..."
+#echo "=========================================================="
+#wget -q -O "$WORKSPACE"/thunder.zip "$THUNDER_PACK_URL"
 
 sudo rm -rf thunder-performance
 echo ""
@@ -57,58 +57,58 @@ cd thunder-performance
 git checkout $BRANCH
 cd perf-scripts
 
-aws s3 cp s3://performance-thunder/keys/thunder-perf-test.pem thunder-perf-test.pem
-chmod 400 thunder-perf-test.pem
-mv thunder-perf-test.pem $RESOURCES_DIR
-
-aws s3 cp s3://performance-thunder-resources/apache-jmeter-5.6.3.tgz apache-jmeter-5.6.3.tgz
-mv apache-jmeter-5.6.3.tgz $RESOURCES_DIR
-
-# Script to resolve cpu cores
-instance_type=""
-if [ "$CPU_CORES" = "2" ]; then
-	instance_type="c6i.large"
-elif [ "$CPU_CORES" = "4" ]; then
-	instance_type="c6i.xlarge"
-elif [ "$CPU_CORES" = "8" ]; then
-	instance_type="c6i.2xlarge"
-else
-	echo ""
-	echo "Provided CPU cores [$CPU_CORES] is not supported with the deployment: $DEPLOYMENT."
-	echo "Exiting..."
-	exit 1
-fi
+#aws s3 cp s3://performance-thunder/keys/thunder-perf-test.pem thunder-perf-test.pem
+#chmod 400 thunder-perf-test.pem
+#mv thunder-perf-test.pem $RESOURCES_DIR
+#
+#aws s3 cp s3://performance-thunder-resources/apache-jmeter-5.6.3.tgz apache-jmeter-5.6.3.tgz
+#mv apache-jmeter-5.6.3.tgz $RESOURCES_DIR
+#
+## Script to resolve cpu cores
+#instance_type=""
+#if [ "$CPU_CORES" = "2" ]; then
+#	instance_type="c6i.large"
+#elif [ "$CPU_CORES" = "4" ]; then
+#	instance_type="c6i.xlarge"
+#elif [ "$CPU_CORES" = "8" ]; then
+#	instance_type="c6i.2xlarge"
+#else
+#	echo ""
+#	echo "Provided CPU cores [$CPU_CORES] is not supported with the deployment: $DEPLOYMENT."
+#	echo "Exiting..."
+#	exit 1
+#fi
 
 cd $DEPLOYMENT
 
-echo ""
-echo "Building project..."
-echo "=========================================================="
+#echo ""
+#echo "Building project..."
+#echo "=========================================================="
+#
+#CMD_MVN="mvn clean install"
+#
+#$CMD_MVN
 
-CMD_MVN="mvn clean install"
+#echo ""
+#echo "Starting test..."
+#echo "=========================================================="
+#
+#echo "CPU Instance type: $instance_type"
+#
+#cmd="./start-performance.sh -k $RESOURCES_DIR/thunder-perf-test.pem \
+#-c is-perf-cert -j $RESOURCES_DIR/apache-jmeter-5.6.3.tgz -n $WORKSPACE/thunder.zip -q $BUILD_USER_EMAIL -i $instance_type -m $DB_TYPE -r $CONCURRENCY -v $MODE -f $DEPLOYMENT -z $USE_DELAYS "
+#
+#if [[ ! -z $ADDITIONAL_PARAMS_TO_RUN_PERFORMANCE_SCRIPT ]]; then
+#	cmd+=" $ADDITIONAL_PARAMS_TO_RUN_PERFORMANCE_SCRIPT"
+#fi
+#
+#echo "$cmd"
+#
+#eval $cmd
 
-$CMD_MVN
+#cp -r results-* "$WORKSPACE_DIR"
 
-echo ""
-echo "Starting test..."
-echo "=========================================================="
-
-echo "CPU Instance type: $instance_type"
-
-cmd="./start-performance.sh -k $RESOURCES_DIR/thunder-perf-test.pem \
--c is-perf-cert -j $RESOURCES_DIR/apache-jmeter-5.6.3.tgz -n $WORKSPACE/thunder.zip -q $BUILD_USER_EMAIL -i $instance_type -m $DB_TYPE -r $CONCURRENCY -v $MODE -f $DEPLOYMENT -z $USE_DELAYS "
-
-if [[ ! -z $ADDITIONAL_PARAMS_TO_RUN_PERFORMANCE_SCRIPT ]]; then
-	cmd+=" $ADDITIONAL_PARAMS_TO_RUN_PERFORMANCE_SCRIPT"
-fi
-
-echo "$cmd"
-
-eval $cmd
-
-cp -r results-* "$WORKSPACE_DIR"
-
-aws s3 cp --recursive results-* s3://performance-thunder/results/"GitHub-$BUILD_NUMBER"
+#aws s3 cp --recursive results-* s3://performance-thunder/results/"GitHub-$BUILD_NUMBER"
 
 echo "Copying summary csv to new directory and pushing to github."
 git config user.name "github-actions[bot]"
@@ -127,10 +127,10 @@ if [ ! -d "$BM_DIR" ]; then
 fi
 
 mkdir ../benchmarks/$timestamp
-cp results-*/summary.csv ../benchmarks/$timestamp/
-cut -d',' -f -9 results-*/summary-original.csv > ../benchmarks/$timestamp/$detailed_summary_filename.csv
-cd ..
-mv benchmarks/$timestamp/summary.csv benchmarks/$timestamp/$summary_filename.csv
+#cp results-*/summary.csv ../benchmarks/$timestamp/
+#cut -d',' -f -9 results-*/summary-original.csv > ../benchmarks/$timestamp/$detailed_summary_filename.csv
+#cd ..
+#mv benchmarks/$timestamp/summary.csv benchmarks/$timestamp/$summary_filename.csv
 
 #Create a readme file for benchmarks
 cat <<EOF >> benchmarks/$timestamp/readme.md
