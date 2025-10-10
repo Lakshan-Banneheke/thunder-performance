@@ -121,18 +121,15 @@ timestamp=$(date +%Y-%m-%d--%H-%M-%S)
 summary_filename="summary-$timestamp"
 detailed_summary_filename="summary_detailed-$timestamp"
 
-cd "../../benchmarks/$DEPLOYMENT"
-benchmark_dir_path="workflow-build-$BUILD_NUMBER"
+benchmark_dir_path="../../benchmarks/$DEPLOYMENT/workflow-build-$BUILD_NUMBER"
 
-mkdir -p $benchmark_dir_path
-cd $benchmark_dir_path
-cp results-*/summary.csv ./
-cut -d',' -f -9 results-*/summary-original.csv > $detailed_summary_filename.csv
+mkdir $benchmark_dir_path
 
-mv summary.csv $summary_filename.csv
+cp results-*/summary.csv $benchmark_dir_path/$summary_filename.csv
+cut -d',' -f -9 results-*/summary-original.csv > $benchmark_dir_path/$detailed_summary_filename.csv
 
 #Create a readme file for benchmarks
-cat <<EOF >> readme.md
+cat <<EOF >> $benchmark_dir_path/readme.md
 Build Number: $BUILD_NUMBER
 
 Build Date and Time: $timestamp
@@ -153,7 +150,7 @@ Performance Repo Branch: $BRANCH
 
 EOF
 
-git add ./
+git add $benchmark_dir_path/
 git commit -m "Add performance benchmarks from test at $timestamp"
 git pull origin $BRANCH
 git push -u origin $BRANCH
