@@ -110,7 +110,7 @@ cp -r results-* "$WORKSPACE_DIR"
 
 aws s3 cp --recursive results-* s3://performance-thunder/results/"GitHub-$BUILD_NUMBER"
 
-# Copy summary csv to new directory and push to github.
+echo "Copying summary csv to new directory and pushing to github."
 timestamp=$(date +%Y-%m-%d--%H-%M-%S)
 summary_filename="summary-$timestamp"
 detailed_summary_filename="summary_detailed-$timestamp"
@@ -152,3 +152,4 @@ git add benchmarks/$timestamp/
 git commit -m "Add performance benchmarks from test at $timestamp"
 git pull origin $BRANCH
 git push -u origin $BRANCH
+echo "Push completed"
